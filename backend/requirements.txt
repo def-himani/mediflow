@@ -1,0 +1,7 @@
+Flask==2.2.5
+Flask_SQLAlchemy==3.0.3
+Flask-Migrate==4.0.4
+python-dotenv==1.0.0
+Flask-Cors==3.0.10
+PyMySQL==1.0.3
+gunicorn==20.1.0
