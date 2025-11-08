@@ -1,6 +1,80 @@
-# MediFlow — Full setup, SQL placement and developer guide
+# MediFlow — Full setup & developer guide
 
-This file documents where to put raw MySQL files, how the backend executes them, and how to consume SELECT results from the frontend.
+This file contains the detailed step-by-step instructions for cloning, setting up environments, where to add frontend HTML/pages, how to run locally (dev and prod), and useful commands for teams.
+
+
+
+## 1) Clone the repository
+
+```bash
+git clone https://github.com/def-himani/mediflow.git mediflow
+cd mediflow
+```
+
+## 2) Create environment file
+
+```bash
+cp .env.example .env
+# Edit .env to set secure values (MYSQL_PASSWORD, SECRET_KEY, VITE_API_BASE, ...)
+```
+
+## 3) Local development (recommended)
+
+Backend (Python):
+
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python run.py
+# backend: http://localhost:5004
+```
+
+Frontend (Vite + React):
+
+```bash
+cd frontend
+npm install
+npm run dev
+# frontend: http://localhost:3000
+```
+
+Or run both with docker-compose for a consistent environment:
+
+```bash
+docker-compose up -d --build
+```
+
+## 4) Production build & local test
+
+```bash
+docker-compose -f docker-compose.prod.yml up -d --build
+curl http://localhost:5004/api/health
+open http://localhost:3000
+```
+
+## 5) Where to add frontend HTML / pages / assets
+
+- `frontend/index.html` — entry HTML file for the SPA (edit for shell changes)
+- `frontend/src/` — React app code (components, pages, routes)
+- `frontend/public/` — static files copied to build output (use for standalone HTML pages)
+
+## 6) Env vars
+
+- `.env` and `.env.example` (do not commit secret values)
+- `VITE_API_BASE` (frontend API base)
+
+## 7) Tests & CI
+
+- `pytest` for backend tests
+- GitHub Actions CI already configured in `.github/workflows/ci.yml`
+
+## 8) Useful commands
+
+See top-level `Makefile` for shortcuts (make setup, make build-prod, make up-prod, make test)
+
+
 
 ## SQL folder structure (create these under `backend/sql/`)
 
