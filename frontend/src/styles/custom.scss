@@ -1,0 +1,54 @@
+// ----------------------------
+// Bootstrap Theme Overrides
+// ----------------------------
+
+// Import Dart Sass modules for new color functions
+@use "sass:color";
+
+// Brand colors
+$primary: #4a90e2;      // MediFlow main color
+$secondary: #f5a623;    // Accent color
+$success: #28a745;
+$danger: #dc3545;
+$warning: #ffc107;
+
+// Backgrounds & body
+$body-bg: #f8f9fa;      // Light gray background
+$font-family-base: 'Roboto', sans-serif;
+
+// Navbar
+$navbar-light-color: #fff;
+$navbar-light-hover-color: color.adjust($primary, $lightness: -10%);
+$navbar-light-active-color: color.adjust($primary, $lightness: -20%);
+$navbar-light-bg: $primary;
+
+// Buttons
+$btn-primary-color: #fff;
+$btn-primary-bg: $primary;
+$btn-primary-border: $primary;
+$btn-secondary-color: #fff;
+$btn-secondary-bg: $secondary;
+$btn-secondary-border: $secondary;
+
+// Alerts (Bootstrap)
+$alert-primary-bg: color.adjust($primary, $lightness: 40%);
+$alert-secondary-bg: color.adjust($secondary, $lightness: 40%);
+
+// Import Bootstrap after overrides
+@use "bootstrap/scss/bootstrap";
+
+// ----------------------------
+// Optional: Custom global styles
+// ----------------------------
+body {
+  background-color: $body-bg;
+  font-family: $font-family-base;
+}
+
+a {
+  color: $primary;
+  &:hover {
+    color: color.adjust($primary, $lightness: -10%);
+    text-decoration: none;
+  }
+}
