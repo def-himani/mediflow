@@ -1,8 +1,18 @@
-import axios from 'axios'
+import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5004'
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5004';
 
-export default axios.create({
+const api = axios.create({
   baseURL: API_BASE,
   timeout: 5000,
-})
+});
+
+// Adjust endpoints to match backend prefix
+export const patientSignup = (data) => api.post('/api/patient/signup', data);
+export const patientLogin = (data) => api.post('/api/patient/login', data);
+export const getInsurances = () => api.get('/api/patient/insurances'); // use api instance
+export const getPharmacies = () => api.get('/api/patient/pharmacies'); // use api instance
+export const physicianLogin = (data) => api.post('/api/physician/login', data);
+export const physicianSignup = (data) => api.post('/api/physician/signup', data);
+
+export default api;
