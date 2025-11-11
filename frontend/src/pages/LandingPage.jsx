@@ -14,14 +14,14 @@ export default function LandingPage() {
       <div className="d-flex gap-3 flex-wrap justify-content-center">
         <button
           className="btn btn-primary"
-          onClick={() => navigate('/patient-signup')}
+          onClick={() => navigate('/patient/signup')}
         >
           Patient Signup
         </button>
 
         <button
           className="btn btn-secondary"
-          onClick={() => navigate('/physician-login')}
+          onClick={() => navigate('/physician/login')}
         >
           Physician Login
         </button>
