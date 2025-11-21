@@ -8,6 +8,7 @@ import PatientDashboard from './pages/PatientDashboard';
 import PhysicianLogin from './pages/PhysicianLogin';
 import PhysicianSignup from './pages/PhysicianSignup';
 import PhysicianDashboard from './pages/PhysicianDashboard';
+import PatientHealthRecord from './pages/PatientHealthRecord';
 import api, { patientSignup, patientLogin } from './services/api';
 
 export default function App() {
@@ -48,7 +49,7 @@ export default function App() {
           <Route path="/physiciandashboard" element={<PhysicianDashboard />} />
           <Route path="/patient/signup" element={<PatientSignup />} />
           <Route path="/physician/login" element={<PhysicianLogin />} />
-
+          <Route path="/patient/healthRecord" element={<PatientHealthRecord />} />
         </Routes>
       </div>
     </Router>
