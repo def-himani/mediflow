@@ -5,6 +5,18 @@ from utils.auth_utils import hash_password, generate_token
 
 patient_bp = Blueprint('patient_bp', __name__)
 
+user_patient={
+     "patient": { 
+          "account_id": 6, 
+          "address":  "12 Maple Ave, NY 1000", 
+          "date_of_birth": "1990-03-15", 
+          "emergency_contact": "Raj Rao", 
+          "gender": "F", 
+          "insurance_id": 1, 
+          "pharmacy_id": 1
+    } 
+}
+
 # -------------------
 # Signup API
 # -------------------
@@ -132,6 +144,34 @@ def get_pharmacies():
         return jsonify(pharmacies)
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+
+# -------------------
+# Patient Health Record API
+# -------------------
+@patient_bp.route('/healthRecord', methods=['POST'])
+def healthRecord():
+    print("Hi")
+
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute("SELECT DATABASE();")
+    print(cursor.fetchone())
+
+    try:
+        cursor.execute("SELECT h.visit_date, h.diagnosis, h.symptoms, h.lab_results, h.follow_up_required, CONCAT(a.first_name,' ', a.last_name) AS physician_name FROM healthrecord h INNER JOIN account a ON a.account_id=h.physician_id WHERE h.patient_id=%s",
+                       (user_patient["patient"]["account_id"],))
+        
+        healthrecords = cursor.fetchall()
+        return jsonify({"success": True, "message": "Health Records obtained successfully", "healthrecords": healthrecords})
+
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
     finally:
         cursor.close()
         conn.close()
