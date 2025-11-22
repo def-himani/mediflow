@@ -91,7 +91,7 @@ export default function PatientHealthRecord() {
             navigate(`/patient/healthrecord/${record_id}`);
         } catch (err) {
             console.error("Failed to fetch health record", err);
-            alert("Could not fetch record");
+            alert("Could not fetch record / Ypu are not permitted to view the health record!");
         }
     };
 

@@ -11,6 +11,7 @@ import PhysicianDashboard from './pages/PhysicianDashboard';
 import PatientHealthRecord from './pages/PatientHealthRecord';
 import HealthRecordDetail from './pages/HealthRecordDetail';
 import PhysicianHealthRecordDetail from './pages/PhysicianHealthRecordDetail';
+import CreateHealthRecord from './pages/CreateHealthRecord';
 import api, { patientSignup, patientLogin } from './services/api';
 
 export default function App() {
@@ -54,6 +55,7 @@ export default function App() {
           <Route path="/patient/healthRecord" element={<PatientHealthRecord />} />
           <Route path="/patient/healthrecord/:recordId" element={<HealthRecordDetail />} />
           <Route path="/physician/healthrecord/:recordId" element={<PhysicianHealthRecordDetail />} />
+          <Route path="/physician/healthrecord/create/:patientId" element={<CreateHealthRecord />} />
         </Routes>
       </div>
     </Router>
