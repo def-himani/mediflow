@@ -162,7 +162,7 @@ def healthRecords():
     print(cursor.fetchone())
 
     try:
-        cursor.execute("SELECT h.record_id, h.visit_date, h.diagnosis, h.symptoms, h.lab_results, h.follow_up_required, CONCAT(a.first_name,' ', a.last_name) AS physician_name FROM healthrecord h INNER JOIN account a ON a.account_id=h.physician_id WHERE h.patient_id=%s",
+        cursor.execute("SELECT h.record_id, h.visit_date, h.diagnosis, h.symptoms, h.lab_results, h.follow_up_required, CONCAT(a.first_name,' ', a.last_name) AS physician_name FROM HealthRecord h INNER JOIN Account a ON a.account_id=h.physician_id WHERE h.patient_id=%s",
                        (user_patient["patient"]["account_id"],))
         
         healthrecords = cursor.fetchall()
@@ -201,6 +201,49 @@ def healthRecord(record_id):
         
         return jsonify({"success": True, "message": "Health Record obtained successfully", "healthrecord": healthrecord})
     
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# -------------------
+# Patient Dashboard API
+# -------------------
+@patient_bp.route('/dashboard', methods=['POST'])
+def dashboard():
+    print("Fetching dashboard data")
+
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute("SELECT DATABASE();")
+    print(cursor.fetchone())
+
+    try:
+        cursor.execute("""
+            SELECT 
+                a.appointment_id,
+                a.date,
+                a.status,
+                a.reason,
+                a.notes,
+                CONCAT(ac.first_name, ' ', ac.last_name) AS physician_name
+            FROM Appointment a
+            INNER JOIN Account ac ON a.physician_id = ac.account_id
+            WHERE a.patient_id = %s
+            ORDER BY a.date DESC
+        """, (user_patient["patient"]["account_id"],))
+        
+        appointments = cursor.fetchall()
+        print(appointments)
+        return jsonify({
+            "success": True, 
+            "message": "Dashboard data obtained successfully", 
+            "appointments": appointments
+        })
+
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 

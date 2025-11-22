@@ -6,7 +6,7 @@ Usage (from the backend/ directory or repo root):
 # from backend/
 python manage.py schema    # run backend/sql/schema.sql
 python manage.py seed      # run backend/sql/seeds.sql
-python manage.py all       # run both schema then seeds
+python manage.py all       # run schema, seeds, and procedures/triggers
 
 # from repo root
 python backend/manage.py all
@@ -27,7 +27,7 @@ def _sql_path(name: str) -> str:
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python manage.py [schema|seed|all]")
+        print("Usage: python manage.py [schema|seed|procedures|all]")
         sys.exit(1)
 
     cmd = sys.argv[1]
@@ -39,13 +39,19 @@ def main():
     elif cmd == 'seed':
         run_sql_file(_sql_path('seeds.sql'), app)
         print('seeds.sql executed')
+    elif cmd == 'procedures':
+        run_sql_file(_sql_path('procedures_triggers.sql'), app)
+        print('procedures_triggers.sql executed')
     elif cmd == 'all':
         run_sql_file(_sql_path('schema.sql'), app)
+        print('schema.sql executed')
         run_sql_file(_sql_path('seeds.sql'), app)
-        print('schema and seeds executed')
+        print('seeds.sql executed')
+        run_sql_file(_sql_path('procedures_triggers.sql'), app)
+        print('procedures_triggers.sql executed')
     else:
         print('Unknown command:', cmd)
-        print('Usage: python manage.py [schema|seed|all]')
+        print('Usage: python manage.py [schema|seed|procedures|all]')
 
 
 if __name__ == '__main__':
