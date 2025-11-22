@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import { patientHealthRecord } from "../services/api";
+import { getHealthRecordById } from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 const Input = ({ value, onChange, placeholder }) => (
   <input
@@ -49,6 +51,7 @@ const Card = ({ children }) => (
 const CardContent = ({ children }) => <div style={{ padding: "10px" }}>{children}</div>;
 
 export default function PatientHealthRecord() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +60,7 @@ export default function PatientHealthRecord() {
   const [showFilter, setShowFilter] = useState(false);
   const [filterFollowUp, setFilterFollowUp] = useState(""); 
   const [filterPhysician, setFilterPhysician] = useState(""); 
+  const [hoveredRow, setHoveredRow] = useState(null);
 
   const filterRef = useRef(null);
 
@@ -78,6 +82,18 @@ export default function PatientHealthRecord() {
     };
     fetchRecords();
   }, []);
+
+
+    const handleRowClick = async (record_id) => {
+        try {
+            // const response = await getHealthRecordById(record_id); // POST request
+            // const recordData = response.data;
+            navigate(`/patient/healthrecord/${record_id}`);
+        } catch (err) {
+            console.error("Failed to fetch health record", err);
+            alert("Could not fetch record");
+        }
+    };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -173,7 +189,7 @@ export default function PatientHealthRecord() {
             )}
           </div>
 
-          <h2>Health Record</h2>
+          <h2>Patient Health Records</h2>
 
           <div style={styles.searchBar}>
             <Input
@@ -200,22 +216,35 @@ export default function PatientHealthRecord() {
                     <th style={styles.thtd}>Physician</th>
                   </tr>
                 </thead>
+
                 <tbody>
-                  {filtered.map((row, i) => (
-                    <motion.tr
-                      key={i}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.2, delay: i * 0.05 }}
-                      style={i % 2 === 0 ? styles.evenRow : styles.oddRow}
-                    >
-                      <td style={styles.thtd}>{row.diagnosis}</td>
-                      <td style={styles.thtd}>{row.symptoms}</td>
-                      <td style={styles.thtd}>{row.follow_up_required}</td>
-                      <td style={styles.thtd}>{row.visit_date}</td>
-                      <td style={styles.thtd}>{row.physician_name}</td>
-                    </motion.tr>
-                  ))}
+                {filtered.map((row, i) => {
+                    const baseColor = i % 2 === 0 ? "#e6f0ff" : "#f9f9f9";
+                    const hoverColor = "rgba(0, 123, 255, 0.1)";
+
+                    return (
+                        <motion.tr
+                        key={i}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.2, delay: i * 0.05 }}
+                        style={{
+                            cursor: "pointer",
+                            backgroundColor: hoveredRow === i ? "rgba(0, 123, 255, 0.1)" : (i % 2 === 0 ? "#e6f0ff" : "#f9f9f9"),
+                            transition: "background-color 0.2s",
+                        }}
+                        onClick={() => handleRowClick(row.record_id)}
+                        onMouseEnter={() => setHoveredRow(i)}
+                        onMouseLeave={() => setHoveredRow(null)}
+                        >
+                        <td style={styles.thtd}>{row.diagnosis}</td>
+                        <td style={styles.thtd}>{row.symptoms}</td>
+                        <td style={styles.thtd}>{row.follow_up_required}</td>
+                        <td style={styles.thtd}>{row.visit_date}</td>
+                        <td style={styles.thtd}>{row.physician_name}</td>
+                        </motion.tr>
+                    );
+                })}
                 </tbody>
               </table>
             </CardContent>
