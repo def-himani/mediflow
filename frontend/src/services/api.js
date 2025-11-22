@@ -17,5 +17,6 @@ export const physicianSignup = (data) => api.post('/api/physician/signup', data)
 export const patientHealthRecord = () => api.post('/api/patient/healthRecord');
 export const patientDashboard = () => api.post('/api/patient/dashboard');
 export const getHealthRecordById = (recordId) => api.get(`/api/patient/healthRecord/record/${recordId}`);
+export const getHealthRecordByIdPhysician = (recordId) => api.get(`/api/physician/healthRecord/record/${recordId}`);
 
 export default api;
