@@ -15,5 +15,6 @@ export const getPharmacies = () => api.get('/api/patient/pharmacies'); // use ap
 export const physicianLogin = (data) => api.post('/api/physician/login', data);
 export const physicianSignup = (data) => api.post('/api/physician/signup', data);
 export const patientHealthRecord = () => api.post('/api/patient/healthRecord');
+export const patientDashboard = () => api.post('/api/patient/dashboard');
 
 export default api;
