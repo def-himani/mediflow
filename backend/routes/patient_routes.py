@@ -151,11 +151,10 @@ def get_pharmacies():
 
 
 # -------------------
-# Patient Health Record API
+# Patient Health Records API
 # -------------------
 @patient_bp.route('/healthRecord', methods=['POST'])
-def healthRecord():
-    print("Hi")
+def healthRecords():
 
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
@@ -163,12 +162,45 @@ def healthRecord():
     print(cursor.fetchone())
 
     try:
-        cursor.execute("SELECT h.visit_date, h.diagnosis, h.symptoms, h.lab_results, h.follow_up_required, CONCAT(a.first_name,' ', a.last_name) AS physician_name FROM healthrecord h INNER JOIN account a ON a.account_id=h.physician_id WHERE h.patient_id=%s",
+        cursor.execute("SELECT h.record_id, h.visit_date, h.diagnosis, h.symptoms, h.lab_results, h.follow_up_required, CONCAT(a.first_name,' ', a.last_name) AS physician_name FROM healthrecord h INNER JOIN account a ON a.account_id=h.physician_id WHERE h.patient_id=%s",
                        (user_patient["patient"]["account_id"],))
         
         healthrecords = cursor.fetchall()
         return jsonify({"success": True, "message": "Health Records obtained successfully", "healthrecords": healthrecords})
 
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# -------------------
+# Patient Specific Health Record API
+# -------------------
+@patient_bp.route('/healthRecord/record/<record_id>', methods=['GET'])
+def healthRecord(record_id):
+    print("record_id=",record_id)
+    # data = request.json
+    # print(request.data)
+    # record_id = data.get('record_id')
+    if not record_id:
+        return jsonify({"error": "record_id is required"}), 400
+   
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute("SELECT DATABASE();")
+    print(cursor.fetchone())
+    try:
+        cursor.execute("SELECT h.record_id, h.patient_id, h.visit_date, h.diagnosis, h.symptoms, h.lab_results, h.follow_up_required, CONCAT(a.first_name,' ', a.last_name) AS physician_name, p.prescription_id, m.medication_id, m.dosage, m.frequency, m.duration, m.instructions, med.medication_name, med.dosage_form, med.storage_instructions, med.common_side_effects, med.description FROM healthrecord h INNER JOIN account a ON a.account_id=h.physician_id LEFT JOIN prescription p ON p.record_id=h.record_id LEFT JOIN medicine m ON m.prescription_id=p.prescription_id LEFT JOIN medications med ON med.medication_id=m.medication_id WHERE h.patient_id=%s AND h.record_id=%s",
+                       (user_patient["patient"]["account_id"],record_id))
+        healthrecord = cursor.fetchall()
+        if not healthrecord:
+            return jsonify({"error": "You do not have access to the health record!"}), 400
+        
+        return jsonify({"success": True, "message": "Health Record obtained successfully", "healthrecord": healthrecord})
+    
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
