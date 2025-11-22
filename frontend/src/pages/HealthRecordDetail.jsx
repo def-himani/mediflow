@@ -95,7 +95,7 @@ export default function HealthRecordDetail() {
         setRecord(groupedRecord);
       } catch (err) {
         console.error(err);
-        setError("Could not fetch health record.");
+        setError("Could not fetch health record / You are not permitted to view the health record!");
       } finally {
         setLoading(false);
       }

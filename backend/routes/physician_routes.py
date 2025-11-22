@@ -132,3 +132,89 @@ def healthRecord(record_id):
     finally:
         cursor.close()
         conn.close()
+
+# -------------------
+# Physician Create Health Record API
+# -------------------
+@physician_bp.route('/healthRecord/create', methods=['POST'])
+def create_health_record():
+    data = request.json
+    patient_id = data.get("patient_id")
+    visit_date = data.get("visit_date")
+    diagnosis = data.get("diagnosis")
+    symptoms = data.get("symptoms")
+    lab_results = data.get("lab_results")
+    follow_up_required = data.get("follow_up_required")
+    prescriptions = data.get("prescriptions", [])
+    print("hI")
+
+    if not all([patient_id, visit_date, diagnosis, symptoms, lab_results, follow_up_required]):
+        return jsonify({"error": "All health record fields are required"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+
+    try:
+
+        cursor.execute(
+            "SELECT 1 FROM Appointment WHERE patient_id=%s AND physician_id=%s LIMIT 1",
+            (patient_id, user_physician["physician"]["account_id"])
+        )
+        if not cursor.fetchone():
+            return jsonify({"error": "You are not authorized to create a record for this patient"}), 403
+        
+        cursor.execute(
+            "INSERT INTO Healthrecord (patient_id, physician_id, visit_date, diagnosis, symptoms, lab_results, follow_up_required) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            (patient_id, user_physician["physician"]["account_id"], visit_date, diagnosis, symptoms, lab_results, follow_up_required)
+        )
+        record_id = cursor.lastrowid
+
+        for pres in prescriptions:
+            med_name = pres.get("medication_name")
+            dosage = pres.get("dosage")
+            frequency = pres.get("frequency")
+            duration = pres.get("duration")
+            instructions = pres.get("instructions")
+
+            if not all([med_name, dosage, frequency, duration, instructions]):
+                conn.rollback()
+                return jsonify({"error": "All prescription fields are required"}), 400
+
+            cursor.execute("SELECT medication_id FROM Medications WHERE medication_name=%s", (med_name,))
+            med_row = cursor.fetchone()
+            if med_row:
+                medication_id = med_row["medication_id"]
+            else:
+                cursor.execute(
+                    "INSERT INTO Medications (medication_name, dosage_form, storage_instructions, common_side_effects, description) "
+                    "VALUES (%s, 'N/A', 'N/A', 'N/A', 'N/A')",
+                    (med_name,)
+                )
+                medication_id = cursor.lastrowid
+
+            cursor.execute(
+                "INSERT INTO Prescription (record_id) VALUES (%s)",
+                (record_id,)
+            )
+            prescription_id = cursor.lastrowid
+
+            cursor.execute(
+                "INSERT INTO Medicine (prescription_id, medication_id, dosage, frequency, duration, instructions) "
+                "VALUES (%s, %s, %s, %s, %s, %s)",
+                (prescription_id, medication_id, dosage, frequency, duration, instructions)
+            )
+
+        conn.commit()
+        return jsonify({"success": True, "message": "Health record created successfully", "record_id": record_id})
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+
