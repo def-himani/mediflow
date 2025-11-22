@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import Sidebar from "../components/PatientSidebar";
-import { getHealthRecordById } from "../services/api";
+import Sidebar from "../components/PhysicianSidebar";
+import { getHealthRecordByIdPhysician } from "../services/api";
 
 const GrayField = ({ value, minHeight = 24 }) => (
   <div
@@ -89,7 +89,7 @@ export default function HealthRecordDetail() {
       if (!recordId) return;
       try {
         setLoading(true);
-        const response = await getHealthRecordById(recordId);
+        const response = await getHealthRecordByIdPhysician(recordId);
         if (response.status !== 200) throw new Error("Failed to fetch record");
         const groupedRecord = groupHealthRecord(response.data.healthrecord);
         setRecord(groupedRecord);
@@ -131,13 +131,13 @@ export default function HealthRecordDetail() {
       <div style={styles.main}>
         <div style={styles.patientInfo}>
           <div style={styles.headerRow}>
-            <h2 style={{ fontSize: "28px", fontWeight: "bold" }}>Health Record {recordId}</h2>
+            <h2 style={{ fontSize: "28px", fontWeight: "bold" }}>View Health Record</h2>
           </div>
 
           <div style={{ display: "flex", gap: "40px", marginBottom: "20px" }}>
             <div style={{ flex: 1 }}>
-              <p style={styles.sectionLabel}>Physician</p>
-              <GrayField value={record.physician_name} minHeight={35} />
+              <p style={styles.sectionLabel}>Patient ID</p>
+              <GrayField value={record.patient_id} minHeight={35} />
             </div>
             <div style={{ minWidth: "180px", maxWidth: "250px" }}>
               <p style={styles.sectionLabel}>Date</p>

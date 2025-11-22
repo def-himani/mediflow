@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/PatientSidebar";
 import { patientHealthRecord } from "../services/api";
 import { getHealthRecordById } from "../services/api";
 import { useNavigate } from "react-router-dom";
