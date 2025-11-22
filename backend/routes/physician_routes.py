@@ -118,7 +118,7 @@ def healthRecord(record_id):
     cursor.execute("SELECT DATABASE();")
     print(cursor.fetchone())
     try:
-        cursor.execute("SELECT h.record_id, h.patient_id, h.visit_date, h.diagnosis, h.symptoms, h.lab_results, h.follow_up_required, CONCAT(a.first_name,' ', a.last_name) AS physician_name, p.prescription_id, m.medication_id, m.dosage, m.frequency, m.duration, m.instructions, med.medication_name, med.dosage_form, med.storage_instructions, med.common_side_effects, med.description FROM healthrecord h INNER JOIN account a ON a.account_id=h.physician_id LEFT JOIN prescription p ON p.record_id=h.record_id LEFT JOIN medicine m ON m.prescription_id=p.prescription_id LEFT JOIN medications med ON med.medication_id=m.medication_id WHERE h.physician_id=%s AND h.record_id=%s",
+        cursor.execute("SELECT h.record_id, h.patient_id, h.visit_date, h.diagnosis, h.symptoms, h.lab_results, h.follow_up_required, CONCAT(a.first_name,' ', a.last_name) AS physician_name, p.prescription_id, m.medication_id, m.dosage, m.frequency, m.duration, m.instructions, med.medication_name, med.dosage_form, med.storage_instructions, med.common_side_effects, med.description FROM Healthrecord h INNER JOIN Account a ON a.account_id=h.physician_id LEFT JOIN Prescription p ON p.record_id=h.record_id LEFT JOIN Medicine m ON m.prescription_id=p.prescription_id LEFT JOIN Medications med ON med.medication_id=m.medication_id WHERE h.physician_id=%s AND h.record_id=%s",
                        (user_physician["physician"]["account_id"],record_id))
         healthrecord = cursor.fetchall()
         if not healthrecord:
