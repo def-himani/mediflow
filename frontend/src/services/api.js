@@ -12,12 +12,22 @@ export const patientSignup = (data) => api.post('/api/patient/signup', data);
 export const patientLogin = (data) => api.post('/api/patient/login', data);
 export const getInsurances = () => api.get('/api/patient/insurances'); // use api instance
 export const getPharmacies = () => api.get('/api/patient/pharmacies'); // use api instance
-export const physicianLogin = (data) => api.post('/api/physician/login', data);
-export const physicianSignup = (data) => api.post('/api/physician/signup', data);
 export const patientHealthRecord = () => api.post('/api/patient/healthRecord');
 export const patientDashboard = () => api.post('/api/patient/dashboard');
 export const getHealthRecordById = (recordId) => api.get(`/api/patient/healthRecord/record/${recordId}`);
 export const getHealthRecordByIdPhysician = (recordId) => api.get(`/api/physician/healthRecord/record/${recordId}`);
 export const createHealthRecord = (data) => api.post('/api/physician/healthRecord/create',data);
+
+// Physician endpoints
+export const physicianProfile = () => api.get('/api/physician/profile');
+export const physicianAppointments = () => api.get('/api/physician/appointments');
+export const physicianPatients = () => api.get('/api/physician/patients');
+export const physicianPatientVisits = (patientId) => api.get(`/api/physician/patient/${patientId}/visits`);
+export const physicianDashboardSummary = () => api.get('/api/physician/dashboard-summary');
+export const updateAppointmentStatus = (appointmentId, status) => api.put(`/api/physician/appointment/${appointmentId}/status`, { status });
+export const physicianLogin = (data) => api.post('/api/physician/login', data);
+export const physicianSignup = (data) => api.post('/api/physician/signup', data);
+
+
 
 export default api;
