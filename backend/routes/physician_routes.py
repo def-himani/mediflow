@@ -7,7 +7,7 @@ physician_bp = Blueprint('physician_bp', __name__)
 
 user_physician={
     "physician": {
-        "account_id": 2,
+        "account_id": 4,
         "license_number": None,
         "specialization_id": None
     }
@@ -217,4 +217,215 @@ def create_health_record():
         conn.close()
 
 
+
+
+
+# -------------------
+# Physician Appointments (for physician dashboard)
+# -------------------
+@physician_bp.route('/appointments', methods=['GET'])
+def appointments():
+    """Return appointments assigned to the hard-coded physician user (demo)."""
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    try:
+        cursor.execute("""
+            SELECT 
+                a.appointment_id,
+                a.patient_id,
+                a.date,
+                a.status,
+                a.reason,
+                a.notes,
+                CONCAT(pf.first_name, ' ', pf.last_name) AS patient_name,
+                CONCAT(ac.first_name, ' ', ac.last_name) AS physician_name
+            FROM Appointment a
+            INNER JOIN Account ac ON a.physician_id = ac.account_id
+            LEFT JOIN Account pf ON a.patient_id = pf.account_id
+            WHERE a.physician_id = %s
+            ORDER BY a.date DESC
+        """, (user_physician["physician"]["account_id"],))
+        appointments = cursor.fetchall()
+        return jsonify({"success": True, "appointments": appointments}), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# -------------------
+# Update appointment status (physician)
+# -------------------
+@physician_bp.route('/appointment/<int:appointment_id>/status', methods=['PUT'])
+def update_appointment_status(appointment_id):
+    data = request.json or {}
+    new_status = data.get('status')
+    if not new_status or new_status not in ('Pending', 'Completed', 'Cancelled'):
+        return jsonify({'success': False, 'message': 'Invalid or missing status'}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        # Ensure the physician owns the appointment (demo uses hard-coded physician id)
+        cursor.execute("SELECT physician_id FROM Appointment WHERE appointment_id=%s", (appointment_id,))
+        row = cursor.fetchone()
+        if not row:
+            return jsonify({'success': False, 'message': 'Appointment not found'}), 404
+        physician_id = row[0] if isinstance(row, tuple) else row.get('physician_id')
+        if int(physician_id) != int(user_physician["physician"]["account_id"]):
+            return jsonify({'success': False, 'message': 'Not authorized to modify this appointment'}), 403
+
+        cursor.execute("UPDATE Appointment SET status=%s WHERE appointment_id=%s", (new_status, appointment_id))
+        conn.commit()
+        return jsonify({'success': True, 'message': 'Status updated'}), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# -------------------
+# Physician Patients (distinct patients the physician has appointments with)
+# -------------------
+@physician_bp.route('/patients', methods=['GET'])
+def get_patients():
+    """Return distinct patients (with their most recent appointment info) for the physician."""
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    try:
+        # Get distinct patients from appointments for this physician, with most recent appointment details
+        cursor.execute("""
+            SELECT DISTINCT
+                a.patient_id,
+                CONCAT(pf.first_name, ' ', pf.last_name) AS patient_name,
+                YEAR(CURDATE()) - YEAR(pa.date_of_birth) AS age,
+                (SELECT MAX(ap.date) FROM Appointment ap WHERE ap.patient_id = a.patient_id AND ap.physician_id = %s) AS recent_date,
+                CONCAT(ac.first_name, ' ', ac.last_name) AS physician_name
+            FROM Appointment a
+            INNER JOIN Account pf ON a.patient_id = pf.account_id
+            LEFT JOIN Patient pa ON a.patient_id = pa.account_id
+            INNER JOIN Account ac ON a.physician_id = ac.account_id
+            WHERE a.physician_id = %s
+            ORDER BY recent_date DESC
+        """, (user_physician["physician"]["account_id"], user_physician["physician"]["account_id"]))
+        patients = cursor.fetchall()
+        return jsonify({"success": True, "patients": patients}), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# -------------------
+# Physician Patient Visits (health records for a specific patient)
+# -------------------
+@physician_bp.route('/patient/<int:patient_id>/visits', methods=['GET'])
+def get_patient_visits(patient_id):
+    """Return health records (visits) for a specific patient, physician-specific."""
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    try:
+        # Fetch all health records for the patient where this physician was the provider
+        cursor.execute("""
+            SELECT 
+                h.record_id,
+                h.visit_date,
+                h.diagnosis,
+                h.symptoms,
+                h.lab_results,
+                h.follow_up_required,
+                CONCAT(ac.first_name, ' ', ac.last_name) AS physician_name
+            FROM HealthRecord h
+            INNER JOIN Account ac ON h.physician_id = ac.account_id
+            WHERE h.patient_id = %s AND h.physician_id = %s
+            ORDER BY h.visit_date DESC
+        """, (patient_id, user_physician["physician"]["account_id"]))
+        visits = cursor.fetchall()
+        return jsonify({"success": True, "visits": visits}), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# -------------------
+# Physician Dashboard Summary (activity logs and prescriptions)
+# -------------------
+@physician_bp.route('/dashboard-summary', methods=['GET'])
+def dashboard_summary():
+    """Return dashboard summary: recent activity logs and prescriptions."""
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    try:
+        # Get most recent activity logs from the physician's patients
+        cursor.execute("""
+            SELECT a.log_id, a.patient_id, a.log_date, a.weight, a.bp, a.calories, a.duration_of_physical_activity
+            FROM ActivityLog a
+            INNER JOIN Appointment ap ON a.patient_id = ap.patient_id
+            WHERE ap.physician_id = %s
+            ORDER BY a.log_date DESC
+            LIMIT 1
+        """, (user_physician["physician"]["account_id"],))
+        activity_log = cursor.fetchone()
+
+        # Get recent prescriptions from the physician's patients
+        # Join Medicine -> Prescription -> HealthRecord -> Medications
+        cursor.execute("""
+            SELECT m.dosage, m.frequency, med.medication_name
+            FROM Medicine m
+            INNER JOIN Prescription p ON m.Prescription_id = p.prescription_id
+            INNER JOIN HealthRecord h ON p.record_id = h.record_id
+            INNER JOIN Medications med ON m.Medication_id = med.medication_id
+            WHERE h.physician_id = %s
+            ORDER BY h.visit_date DESC
+            LIMIT 2
+        """, (user_physician["physician"]["account_id"],))
+        prescriptions = cursor.fetchall()
+
+        return jsonify({
+            "success": True, 
+            "activity_log": activity_log,
+            "prescriptions": prescriptions
+        }), 200
+    except Exception as e:
+        print(f"Error in dashboard_summary: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# -------------------
+# Physician Profile
+# -------------------
+@physician_bp.route('/profile', methods=['GET'])
+def get_profile():
+    """Return physician profile information."""
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    try:
+        cursor.execute("""
+            SELECT a.account_id, a.first_name, a.last_name, a.email, a.phone,
+                   p.specialization_id, p.license_number
+            FROM Account a
+            LEFT JOIN Physician p ON a.account_id = p.account_id
+            WHERE a.account_id = %s AND a.role = 'physician'
+        """, (user_physician["physician"]["account_id"],))
+        profile = cursor.fetchone()
+        
+        if not profile:
+            return jsonify({"success": False, "message": "Physician not found"}), 404
+        
+        return jsonify({"success": True, "profile": profile}), 200
+    except Exception as e:
+        print(f"Error in get_profile: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
