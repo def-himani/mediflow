@@ -27,9 +27,9 @@ services:
     build:
       context: ./frontend
     working_dir: /app
-    command: npm run dev -- --host 0.0.0.0
+    # command: npm run dev -- --host 0.0.0.0
     ports:
-      - "3000:3000"
+      - "3000:80"
     volumes:
       - ./frontend:/app
 

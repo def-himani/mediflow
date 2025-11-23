@@ -60,9 +60,11 @@ def create_app():
     from .routes import api_bp
     from routes.patient_routes import patient_bp
     from routes.physician_routes import physician_bp
+    from routes.activity_log_routes import activity_log_bp
 
     app.register_blueprint(api_bp)
     app.register_blueprint(patient_bp, url_prefix='/api/patient')
     app.register_blueprint(physician_bp, url_prefix='/api/physician')
+    app.register_blueprint(activity_log_bp, url_prefix='/api')
 
     return app

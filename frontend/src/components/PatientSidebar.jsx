@@ -76,9 +76,9 @@ export default function Sidebar() {
           style={buttonStyle}
           onMouseEnter={buttonHover}
           onMouseLeave={buttonLeave}
-          onClick={() => navigate("/patient/activityLog")}
+          onClick={() => navigate("/patient/activity-log")}
         >
-          Activity Log
+          Activity Logs
         </button>
       </nav>
     </div>

@@ -2,6 +2,8 @@ import pymysql
 from flask import Blueprint, request, jsonify
 from utils.db_utils import get_db_connection
 from utils.auth_utils import hash_password, generate_token
+from flask import Blueprint, request, jsonify, session
+
 
 physician_bp = Blueprint('physician_bp', __name__)
 
@@ -70,68 +72,61 @@ def signup():
 # -------------------
 # Login API
 # -------------------
-@physician_bp.route('/login', methods=['POST'])
+from flask import Blueprint, request, jsonify, session  # ← Add session here
+import pymysql
+from utils.db_utils import get_db_connection
+from utils.auth_utils import hash_password, generate_token
+
+physician_bp = Blueprint('physician_bp', __name__)
+
+@physician_bp.route('login', methods=['POST'])
 def login():
     data = request.json
+    
+    # ✅ Make sure you're getting 'username' correctly
+    username = data.get('user_name') if data else None  # ✅ Match what frontend sends
+
+    password = data.get('password')
+    
+    if not username or not password:
+        return jsonify({'success': False, 'message': 'Username and password required'}), 400
+    
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-
+    
     try:
-        hashed_pw = hash_password(data['password'])
-        cursor.execute("SELECT * FROM Account WHERE user_name=%s AND password=%s AND role='physician'",
-                       (data['user_name'], hashed_pw))
+        hashed_pw = hash_password(password)
+        cursor.execute(
+            "SELECT * FROM Account WHERE user_name=%s AND password=%s AND role='physician'",
+            (username, hashed_pw)  # ✅ Use 'username' variable here
+        )
         account = cursor.fetchone()
-
+        
         if not account:
-            return jsonify({"success": False, "message": "Invalid credentials"}), 401
-
-        # Fetch physician details
+            return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
+        
         cursor.execute("SELECT * FROM Physician WHERE account_id=%s", (account['account_id'],))
         physician = cursor.fetchone()
-
-        token = generate_token(account['account_id'], account['role'])
-
-        return jsonify({
-            "success": True,
-            "token": token,
-            "physician": physician
-        })
-
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
-
-    finally:
-        cursor.close()
-        conn.close()
-
-# -------------------
-# Physician Specific Health Record API
-# -------------------
-@physician_bp.route('/healthRecord/record/<record_id>', methods=['GET'])
-def healthRecord(record_id):
-    print("record_id=",record_id)
-    if not record_id:
-        return jsonify({"error": "record_id is required"}), 400
-   
-    conn = get_db_connection()
-    cursor = conn.cursor(pymysql.cursors.DictCursor)
-    cursor.execute("SELECT DATABASE();")
-    print(cursor.fetchone())
-    try:
-        cursor.execute("SELECT h.record_id, h.patient_id, h.visit_date, h.diagnosis, h.symptoms, h.lab_results, h.follow_up_required, CONCAT(a.first_name,' ', a.last_name) AS physician_name, p.prescription_id, m.medication_id, m.dosage, m.frequency, m.duration, m.instructions, med.medication_name, med.dosage_form, med.storage_instructions, med.common_side_effects, med.description FROM Healthrecord h INNER JOIN Account a ON a.account_id=h.physician_id LEFT JOIN Prescription p ON p.record_id=h.record_id LEFT JOIN Medicine m ON m.prescription_id=p.prescription_id LEFT JOIN Medications med ON med.medication_id=m.medication_id WHERE h.physician_id=%s AND h.record_id=%s",
-                       (user_physician["physician"]["account_id"],record_id))
-        healthrecord = cursor.fetchall()
-        if not healthrecord:
-            return jsonify({"error": "You do not have access to the health record!"}), 400
         
-        return jsonify({"success": True, "message": "Health Record obtained successfully", "healthrecord": healthrecord})
-    
+        # ✅ Store in session
+        session['user_id'] = account['account_id']
+        session['user_type'] = 'physician'
+        session['user_name'] = account['user_name']
+        session.permanent = True
+        
+        token = generate_token(account['account_id'], account['role'])
+        
+        return jsonify({
+            'success': True,
+            'token': token,
+            'physician': physician
+        })
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
-
+        return jsonify({'success': False, 'message': str(e)}), 500
     finally:
         cursor.close()
         conn.close()
+
 
 # -------------------
 # Physician Create Health Record API

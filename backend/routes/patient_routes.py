@@ -2,6 +2,9 @@ import pymysql
 from flask import Blueprint, request, jsonify
 from utils.db_utils import get_db_connection
 from utils.auth_utils import hash_password, generate_token
+from flask import session  # Add this import at the top
+from flask import Blueprint, request, jsonify, session
+
 
 patient_bp = Blueprint('patient_bp', __name__)
 
@@ -80,40 +83,69 @@ def signup():
 # -------------------
 # Login API
 # -------------------
-@patient_bp.route('/login', methods=['POST'])
+from flask import Blueprint, request, jsonify, session
+import pymysql
+from utils.db_utils import get_db_connection
+from utils.auth_utils import hash_password, generate_token
+
+patient_bp = Blueprint('patient_bp', __name__)
+
+@patient_bp.route('login', methods=['POST'])
 def login():
     data = request.json
+    
+    # ✅ Get username and password (no strict validation yet)
+    username = data.get('user_name') if data else None  # ✅ Match what frontend sends
+    password = data.get('password') if data else None
+    
+    # Debug: Print what we received
+    print(f"DEBUG Login - Received data: {data}")
+    print(f"DEBUG Login - Username: {username}, Password: {password}")
+    
+    if not username or not password:
+        return jsonify({
+            'success': False, 
+            'message': 'Username and password required',
+            'debug': f'Received: username={username}, password={password}'
+        }), 400
+    
     conn = get_db_connection()
-    cursor = conn.cursor(pymysql.cursors.DictCursor)  # <-- Use DictCursor here
-
-
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    
     try:
-        hashed_pw = hash_password(data['password'])
-        cursor.execute("SELECT * FROM Account WHERE user_name=%s AND password=%s AND role='patient'",
-                       (data['user_name'], hashed_pw))
+        hashed_pw = hash_password(password)
+        cursor.execute(
+            "SELECT * FROM Account WHERE user_name=%s AND password=%s AND role='patient'",
+            (username, hashed_pw)
+        )
         account = cursor.fetchone()
-
+        
         if not account:
-            return jsonify({"success": False, "message": "Invalid credentials"}), 401
-
-        # Fetch patient details
+            return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
+        
         cursor.execute("SELECT * FROM Patient WHERE account_id=%s", (account['account_id'],))
         patient = cursor.fetchone()
-
+        
+        # ✅ Store in session
+        session['user_id'] = account['account_id']
+        session['user_type'] = 'patient'
+        session['user_name'] = account['user_name']
+        session.permanent = True
+        
         token = generate_token(account['account_id'], account['role'])
-
+        
         return jsonify({
-            "success": True,
-            "token": token,
-            "patient": patient
+            'success': True,
+            'token': token,
+            'patient': patient
         })
-
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
-
+        print(f"DEBUG Login - Exception: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
     finally:
         cursor.close()
         conn.close()
+
 
 # -------------------
 # Get all insurances

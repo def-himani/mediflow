@@ -28,6 +28,18 @@ export const updateAppointmentStatus = (appointmentId, status) => api.put(`/api/
 export const physicianLogin = (data) => api.post('/api/physician/login', data);
 export const physicianSignup = (data) => api.post('/api/physician/signup', data);
 
+// Activity Log APIs - Physician
+export const getAllActivityLogs = () => api.get('/api/physician/activity-log');
+export const getActivityLogById = (logId) => api.get(`/api/physician/activity-log/${logId}`);
+export const createActivityLog = (data) => api.post('/api/physician/activity-log/create', data);
+export const updateActivityLog = (logId, data) => api.put(`/api/physician/activity-log/update/${logId}`, data);
+export const getActivityLogsByPatientId = (patientId) => api.get(`/api/physician/activity-log/patient/${patientId}`);
+
+// Activity Log APIs - Patient
+export const getPatientActivityLogs = () => api.get('/api/patient/activity-log');
+export const getActivityLogByIdPatient = (logId) => api.get(`/api/patient/activity-log/${logId}`);
+export const createPatientActivityLog = (data) => api.post('/api/patient/activity-log/create', data);
+export const updatePatientActivityLog = (logId, data) => api.put(`/api/patient/activity-log/update/${logId}`, data);
 
 
 export default api;

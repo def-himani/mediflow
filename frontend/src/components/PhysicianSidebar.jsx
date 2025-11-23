@@ -80,6 +80,15 @@ export default function PhysicianSidebar() {
         >
           Patients
         </button>
+
+        <button
+          style={buttonStyle}
+          onMouseEnter={buttonHover}
+          onMouseLeave={buttonLeave}
+          onClick={() => navigate("/physician/activity-log")}
+        >
+          Activity Logs
+        </button>
       </nav>
     </div>
   );

@@ -16,6 +16,13 @@ import CreateHealthRecord from './pages/CreateHealthRecord';
 import api, { patientSignup, patientLogin } from './services/api';
 import PhysicianPatientList from './pages/PhysicianPatientList';
 import PhysicianExtendedPatientDetail from './pages/PhysicianExtendedPatientDetail';
+import ActivityLog from './pages/ActivityLog';
+import CreateActivityLog from './pages/CreateActivityLog';
+import EditActivityLog from './pages/EditActivityLog';
+import PatientActivityLog from './pages/PatientActivityLog';
+import PatientActivityLogDetail from './pages/PatientActivityLogDetail';
+import CreatePatientActivityLog from './pages/CreatePatientActivityLog';
+
 
 export default function App() {
   
@@ -63,6 +70,12 @@ export default function App() {
           <Route path="/physician/patientList" element={<PhysicianPatientList />} />
           <Route path="/physician/patient/:patientId/extended" element={<PhysicianExtendedPatientDetail />} />
           <Route path="/physician/healthrecord/create/:patientId" element={<CreateHealthRecord />} />
+          <Route path="/physician/activity-log" element={<ActivityLog />} />
+          <Route path="/physician/activity-log/new" element={<CreateActivityLog />} />
+          <Route path="/physician/activity-log/edit/:logId" element={<EditActivityLog />} />
+          <Route path="/physician/activity-log/patient/:patientId" element={<ActivityLog />} />
+          <Route path="/patient/activity-log" element={<PatientActivityLog />} />
+          <Route path="/patient/activity-log/:logId" element={<PatientActivityLogDetail />} />
         </Routes>
       </div>
     </Router>
