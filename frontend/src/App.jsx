@@ -21,6 +21,7 @@ import NewActivity from './pages/NewActivity';
 import EditActivityLog from './pages/EditActivityLog';
 import PhysicianPatientActivityLog from './pages/PhysicianPatientActivityLog';
 import PhysicianViewActivityLog from './pages/PhysicianViewActivityLog';
+import PatientProfile from './pages/PatientProfile';
 
 export default function App() {
   
@@ -54,7 +55,7 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/signup" element={<PatientSignup onSubmit={handleSignup} />} />
           <Route path="/login" element={<PatientLogin onSubmit={handleLogin} />} />
-          <Route path="/patientdashboard" element={<PatientDashboard />} />
+          <Route path="/patient/dashboard" element={<PatientDashboard />} />
           <Route path="/physicianlogin" element={<PhysicianLogin />} />
           <Route path="/physiciansignup" element={<PhysicianSignup />} />
           <Route path="/physiciandashboard" element={<PhysicianDashboard />} />
@@ -73,6 +74,7 @@ export default function App() {
           <Route path="/patient/activity/:logId/edit" element={<EditActivityLog />} />
           <Route path="/physician/patient/:patientId/activitylog" element={<PhysicianPatientActivityLog />} />
           <Route path="/physician/patient/:patientId/activity/:logId/view" element={<PhysicianViewActivityLog />} />
+          <Route path="/patient/profile" element={<PatientProfile />} />
         </Routes>
       </div>
     </Router>

@@ -118,7 +118,7 @@ def login():
 # -------------------
 # Get all insurances
 # -------------------
-# Get all insurances
+# Get all insurances to be displayed on the signup page and profile update page
 @patient_bp.route('/insurances', methods=['GET'])
 def get_insurances():
     conn = get_db_connection()
@@ -251,6 +251,115 @@ def dashboard():
         cursor.close()
         conn.close()
 
+# -------------------
+# Patient Profile API
+# -------------------
+@patient_bp.route('/profile', methods=['GET'])
+def profile():
+    print("Fetching profile data")
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute("SELECT DATABASE();")
+    print(cursor.fetchone())
+    try:
+        cursor.execute("""
+            SELECT 
+                a.account_id,
+                a.first_name,
+                a.last_name,
+                a.email,
+                a.phone,
+                a.user_name,
+                p.date_of_birth,
+                p.gender,
+                p.address,
+                p.emergency_contact,
+                i.insurance_id,
+                i.provider_name,
+                i.policy_number,
+                ph.pharmacy_id,
+                ph.pharmacy_name,
+                ph.location AS pharmacy_location,
+                ph.phone AS pharmacy_phone
+            FROM Account a
+            INNER JOIN Patient p ON a.account_id = p.account_id
+            LEFT JOIN Insurance i ON p.insurance_id = i.insurance_id
+            LEFT JOIN Pharmacy ph ON p.pharmacy_id = ph.pharmacy_id
+            WHERE a.account_id = %s
+        """, (user_patient["patient"]["account_id"],))
+        
+        profile_data = cursor.fetchone()
+        
+        if not profile_data:
+            return jsonify({"error": "Profile not found"}), 404
+        
+        return jsonify({
+            "success": True, 
+            "message": "Profile data obtained successfully", 
+            "profile": profile_data
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# -------------------
+# Update Patient Profile API
+# -------------------
+@patient_bp.route('/profile/update', methods=['PUT'])
+def update_profile():
+    print("Updating profile data")
+    data = request.json
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    
+    try:
+        # Update Account table
+        cursor.execute("""
+            UPDATE Account 
+            SET first_name = %s,
+                last_name = %s,
+                email = %s,
+                phone = %s
+            WHERE account_id = %s
+        """, (
+            data.get('first_name'),
+            data.get('last_name'),
+            data.get('email'),
+            data.get('phone'),
+            user_patient["patient"]["account_id"]
+        ))
+        
+        # Update Patient table
+        cursor.execute("""
+            UPDATE Patient 
+            SET address = %s,
+                emergency_contact = %s,
+                insurance_id = %s,
+                pharmacy_id = %s
+            WHERE account_id = %s
+        """, (
+            data.get('address'),
+            data.get('emergency_contact'),
+            data.get('insurance_id'),
+            data.get('pharmacy_id'),
+            user_patient["patient"]["account_id"]
+        ))
+        
+        conn.commit()
+        
+        return jsonify({
+            "success": True, 
+            "message": "Profile updated successfully"
+        })
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 # -------------------
 # Activity Log API

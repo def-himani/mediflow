@@ -14,7 +14,7 @@ function PatientLogin() {
             const res = await patientLogin(form);
             localStorage.setItem("token", res.data.token);
             alert("Login successful!");
-            navigate('/patientdashboard'); // redirect after login
+            navigate('/patient/dashboard'); // redirect after login
         } catch (err) {
             alert(err.response?.data?.message || 'Login failed');
         }

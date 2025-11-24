@@ -18,6 +18,10 @@ export const getHealthRecordById = (recordId) => api.get(`/api/patient/healthRec
 export const getHealthRecordByIdPhysician = (recordId) => api.get(`/api/physician/healthRecord/record/${recordId}`);
 export const createHealthRecord = (data) => api.post('/api/physician/healthRecord/create',data);
 
+// Patient Profile endpoints
+export const getPatientProfile = () => api.get('/api/patient/profile');
+export const updatePatientProfile = (data) => api.put('/api/patient/profile/update', data);
+
 // Physician endpoints
 export const physicianProfile = () => api.get('/api/physician/profile');
 export const physicianAppointments = () => api.get('/api/physician/appointments');

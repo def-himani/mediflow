@@ -18,7 +18,7 @@ export default function Navbar(){
           </ul>
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
-              <Link className="nav-link" to="/profile">
+              <Link className="nav-link" to="/patient/profile">
                 <UserCircle size={34} />
               </Link>
             </li>

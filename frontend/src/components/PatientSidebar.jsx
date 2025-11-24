@@ -58,7 +58,7 @@ export default function Sidebar() {
           style={buttonStyle}
           onMouseEnter={buttonHover}
           onMouseLeave={buttonLeave}
-          onClick={() => navigate("/patientdashboard")}
+          onClick={() => navigate("/patient/dashboard")}
         >
           Dashboard
         </button>
