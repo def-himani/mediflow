@@ -250,3 +250,173 @@ def dashboard():
     finally:
         cursor.close()
         conn.close()
+
+
+# -------------------
+# Activity Log API
+# -------------------
+@patient_bp.route('/activitylogs', methods=['GET'])
+def get_activity_logs():
+    """Get all activity logs for the current patient."""
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    try:
+        cursor.execute("""
+            SELECT 
+                log_id,
+                log_date,
+                weight,
+                bp,
+                calories,
+                duration_of_physical_activity
+            FROM ActivityLog
+            WHERE patient_id = %s
+            ORDER BY log_date DESC
+        """, (user_patient["patient"]["account_id"],))
+        
+        logs = cursor.fetchall()
+        return jsonify({"success": True, "logs": logs}), 200
+    except Exception as e:
+        print(f"Error in get_activity_logs: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# -------------------
+# Get Specific Activity Log
+# -------------------
+@patient_bp.route('/activitylog/<int:log_id>', methods=['GET'])
+def get_activity_log(log_id):
+    """Get a specific activity log by log_id."""
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    try:
+        cursor.execute("""
+            SELECT 
+                log_id,
+                log_date,
+                weight,
+                bp,
+                calories,
+                duration_of_physical_activity
+            FROM ActivityLog
+            WHERE log_id = %s AND patient_id = %s
+        """, (log_id, user_patient["patient"]["account_id"]))
+        
+        log = cursor.fetchone()
+        if not log:
+            return jsonify({"success": False, "message": "Activity log not found"}), 404
+        
+        return jsonify({"success": True, "log": log}), 200
+    except Exception as e:
+        print(f"Error in get_activity_log: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# -------------------
+# Create New Activity Log
+# -------------------
+@patient_bp.route('/activitylog/new', methods=['POST'])
+def create_activity_log():
+    """Create a new activity log."""
+    data = request.json
+    
+    # Validate required fields
+    required_fields = ['date', 'weight', 'bp_systolic', 'bp_diastolic', 'calories', 'duration']
+    missing_fields = [f for f in required_fields if f not in data]
+    if missing_fields:
+        return jsonify({"success": False, "message": f"Missing fields: {', '.join(missing_fields)}"}), 400
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    try:
+        # Format BP as "systolic/diastolic"
+        bp = f"{data['bp_systolic']}/{data['bp_diastolic']}"
+        
+        cursor.execute("""
+            INSERT INTO ActivityLog (patient_id, log_date, weight, bp, calories, duration_of_physical_activity)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (
+            user_patient["patient"]["account_id"],
+            data['date'],
+            data['weight'],
+            bp,
+            data['calories'],
+            data['duration']
+        ))
+        
+        conn.commit()
+        return jsonify({"success": True, "message": "Activity log created successfully"}), 201
+    except Exception as e:
+        conn.rollback()
+        print(f"Error in create_activity_log: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# -------------------
+# Update Activity Log
+# -------------------
+@patient_bp.route('/activitylog/<int:log_id>/edit', methods=['PUT'])
+def update_activity_log(log_id):
+    """Update an existing activity log."""
+    data = request.json
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    try:
+        # Verify ownership
+        cursor.execute(
+            "SELECT log_id FROM ActivityLog WHERE log_id = %s AND patient_id = %s",
+            (log_id, user_patient["patient"]["account_id"])
+        )
+        if not cursor.fetchone():
+            return jsonify({"success": False, "message": "Activity log not found"}), 404
+        
+        # Format BP if provided
+        bp = None
+        if 'bp_systolic' in data and 'bp_diastolic' in data:
+            bp = f"{data['bp_systolic']}/{data['bp_diastolic']}"
+        
+        # Build update query dynamically
+        update_fields = []
+        params = []
+        
+        if 'weight' in data:
+            update_fields.append("weight = %s")
+            params.append(data['weight'])
+        if bp:
+            update_fields.append("bp = %s")
+            params.append(bp)
+        if 'calories' in data:
+            update_fields.append("calories = %s")
+            params.append(data['calories'])
+        if 'duration' in data:
+            update_fields.append("duration_of_physical_activity = %s")
+            params.append(data['duration'])
+
+        
+        if not update_fields:
+            return jsonify({"success": False, "message": "No fields to update"}), 400
+        
+        params.append(log_id)
+        query = f"UPDATE ActivityLog SET {', '.join(update_fields)} WHERE log_id = %s"
+        
+        cursor.execute(query, params)
+        conn.commit()
+        
+        return jsonify({"success": True, "message": "Activity log updated successfully"}), 200
+    except Exception as e:
+        conn.rollback()
+        print(f"Error in update_activity_log: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()

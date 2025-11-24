@@ -429,3 +429,91 @@ def get_profile():
         cursor.close()
         conn.close()
 
+
+# -------------------
+# Physician Patient Activity Logs
+# -------------------
+@physician_bp.route('/patient/<int:patient_id>/activitylogs', methods=['GET'])
+def get_patient_activity_logs(patient_id):
+    """Get all activity logs for a specific patient (for physician view)."""
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    try:
+        # Verify physician has access to this patient
+        cursor.execute("""
+            SELECT patient_id FROM Appointment
+            WHERE patient_id = %s AND physician_id = %s
+            LIMIT 1
+        """, (patient_id, user_physician["physician"]["account_id"]))
+        
+        if not cursor.fetchone():
+            return jsonify({"success": False, "message": "Access denied"}), 403
+        
+        # Get activity logs
+        cursor.execute("""
+            SELECT 
+                log_id,
+                log_date,
+                weight,
+                bp,
+                calories,
+                duration_of_physical_activity
+            FROM ActivityLog
+            WHERE patient_id = %s
+            ORDER BY log_date DESC
+        """, (patient_id,))
+        
+        logs = cursor.fetchall()
+        return jsonify({"success": True, "logs": logs}), 200
+    except Exception as e:
+        print(f"Error in get_patient_activity_logs: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# -------------------
+# Physician View Single Patient Activity Log
+# -------------------
+@physician_bp.route('/patient/<int:patient_id>/activity/<int:log_id>', methods=['GET'])
+def get_patient_activity_log(patient_id, log_id):
+    """Get a specific activity log for a patient (for physician view)."""
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    try:
+        # Verify physician has access to this patient
+        cursor.execute("""
+            SELECT patient_id FROM Appointment
+            WHERE patient_id = %s AND physician_id = %s
+            LIMIT 1
+        """, (patient_id, user_physician["physician"]["account_id"]))
+        
+        if not cursor.fetchone():
+            return jsonify({"success": False, "message": "Access denied"}), 403
+        
+        # Get activity log
+        cursor.execute("""
+            SELECT 
+                log_id,
+                log_date,
+                weight,
+                bp,
+                calories,
+                duration_of_physical_activity
+            FROM ActivityLog
+            WHERE log_id = %s AND patient_id = %s
+        """, (log_id, patient_id))
+        
+        log = cursor.fetchone()
+        if not log:
+            return jsonify({"success": False, "message": "Activity log not found"}), 404
+        
+        return jsonify({"success": True, "log": log}), 200
+    except Exception as e:
+        print(f"Error in get_patient_activity_log: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+

@@ -43,7 +43,7 @@ export default function PhysicianPatientList() {
   }, []);
 
   const handleActivityClick = (patientId) => {
-    navigate(`/physician/patient/${patientId}/activity`);
+    navigate(`/physician/patient/${patientId}/activitylog`);
   };
 
   const handleHealthRecordClick = (recordId) => {
