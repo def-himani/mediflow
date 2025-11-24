@@ -18,6 +18,10 @@ export default function PhysicianExtendedPatientDetail() {
     navigate(`/physician/healthrecord/create/${patientId}`);
   };
 
+  const handleViewActivityLog = () => {
+    navigate(`/physician/patient/${patientId}/activitylog`);
+  };
+
   useEffect(() => {
     const fetchVisits = async () => {
       try {
@@ -65,7 +69,10 @@ export default function PhysicianExtendedPatientDetail() {
         <div style={styles.header}>
           <button style={styles.backButton} onClick={() => navigate(-1)}>Back</button>
           <h2 style={{ margin: 0 }}>Patient Visits (Extended)</h2>
-          <button style={styles.healthButton} onClick={handleCreateHealthRecord}>Health Records+</button>
+          <div style={{ display: "flex", gap: "12px" }}>
+            <button style={styles.healthButton} onClick={handleViewActivityLog}>Activity Log</button>
+            <button style={styles.healthButton} onClick={handleCreateHealthRecord}>Health Records+</button>
+          </div>
         </div>
 
         {loading && <p>Loading visits...</p>}
