@@ -140,7 +140,7 @@ INSERT IGNORE INTO Medications (medication_id, medication_name, dosage_form, sto
 (10, 'Vitamin D3', 'Capsule', 'Cool dry place', 'None', 'Bone health supplement');
 
 -- Appointment Data
-INSERT IGNORE INTO Appointment (appointment_id, patient_id, physician_id, date, status, reason, notes) VALUES
+INSERT IGNORE INTO Appointment (appointment_id, patient_id, physician_id, datetime, status, reason, notes) VALUES
 (1, 6, 1, '2025-10-10', 'Completed', 'Chest pain', 'Recommended ECG'),
 (2, 7, 2, '2025-10-11', 'Pending', 'Skin allergy', 'Patch test planned'),
 (3, 8, 3, '2025-09-25', 'Completed', 'Migraine', 'Follow-up after 2 weeks'),

@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS Appointment (
     appointment_id INT AUTO_INCREMENT PRIMARY KEY,
     patient_id INT NOT NULL,
     physician_id INT NOT NULL,
-    date DATE NOT NULL,
+    date DATETIME NOT NULL,
     status ENUM('Pending', 'Completed', 'Cancelled') DEFAULT 'Pending',
     reason VARCHAR(255),
     notes TEXT,

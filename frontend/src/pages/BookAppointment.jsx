@@ -149,6 +149,7 @@ export default function BookAppointment() {
 
     try {
       setSubmitting(true);
+      formData.date = new Date(formData.date).toISOString().slice(0, 19).replace('T', ' '); // Convert to ISO string for backend
       const response = await bookAppointment(formData);
 
       if (response.data.success) {
