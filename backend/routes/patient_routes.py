@@ -529,3 +529,212 @@ def update_activity_log(log_id):
     finally:
         cursor.close()
         conn.close()
+
+# -------------------
+# Get Available Physicians API
+# -------------------
+@patient_bp.route('/physicians', methods=['GET'])
+def get_physicians():
+    print("Fetching physicians")
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                p.account_id,
+                CONCAT(a.first_name, ' ', a.last_name) AS physician_name,
+                s.specialization_name,
+                p.license_number
+            FROM Physician p
+            INNER JOIN Account a ON p.account_id = a.account_id
+            INNER JOIN Specialization s ON p.specialization_id = s.specialization_id
+            ORDER BY a.last_name, a.first_name
+        """)
+        
+        physicians = cursor.fetchall()
+        
+        return jsonify({
+            "success": True,
+            "physicians": physicians
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# -------------------
+# Get Specializations API
+# -------------------
+@patient_bp.route('/specializations', methods=['GET'])
+def get_specializations():
+    print("Fetching specializations")
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                specialization_id,
+                specialization_name
+            FROM Specialization
+            ORDER BY specialization_name
+        """)
+        
+        specializations = cursor.fetchall()
+        
+        return jsonify({
+            "success": True,
+            "specializations": specializations
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# -------------------
+# Book Appointment API
+# -------------------
+@patient_bp.route('/appointment/book', methods=['POST'])
+def book_appointment():
+    print("Booking appointment")
+    data = request.json
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    
+    try:
+        # Validate required fields
+        required_fields = ['physician_id', 'date', 'reason']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({"success": False, "message": f"{field} is required"}), 400
+        
+        # Check if physician already has an appointment at this date/time
+        cursor.execute("""
+            SELECT appointment_id 
+            FROM Appointment 
+            WHERE physician_id = %s 
+            AND date = %s 
+            AND status != 'Cancelled'
+        """, (data.get('physician_id'), data.get('date')))
+        
+        existing = cursor.fetchone()
+        if existing:
+            return jsonify({
+                "success": False, 
+                "message": "This physician already has an appointment at this time. Please choose a different time."
+            }), 400
+        
+        # Insert new appointment
+        cursor.execute("""
+            INSERT INTO Appointment (patient_id, physician_id, date, status, reason, notes)
+            VALUES (%s, %s, %s, 'Pending', %s, %s)
+        """, (
+            user_patient["patient"]["account_id"],
+            data.get('physician_id'),
+            data.get('date'),
+            data.get('reason'),
+            data.get('notes', '')
+        ))
+        
+        conn.commit()
+        
+        return jsonify({
+            "success": True,
+            "message": "Appointment booked successfully!"
+        })
+    except Exception as e:
+        conn.rollback()
+        print("Error booking appointment:", str(e))
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# -------------------
+# Get Patient Appointments API
+# -------------------
+@patient_bp.route('/appointments', methods=['GET'])
+def get_appointments():
+    print("Fetching patient appointments")
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                a.appointment_id,
+                a.date,
+                a.status,
+                a.reason,
+                a.notes,
+                CONCAT(ac.first_name, ' ', ac.last_name) AS physician_name,
+                s.specialization_name
+            FROM Appointment a
+            INNER JOIN Account ac ON a.physician_id = ac.account_id
+            INNER JOIN Physician p ON a.physician_id = p.account_id
+            INNER JOIN Specialization s ON p.specialization_id = s.specialization_id
+            WHERE a.patient_id = %s
+            ORDER BY a.date DESC
+        """, (user_patient["patient"]["account_id"],))
+        
+        appointments = cursor.fetchall()
+        
+        return jsonify({
+            "success": True,
+            "appointments": appointments
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# -------------------
+# Cancel Appointment API
+# -------------------
+@patient_bp.route('/appointment/<int:appointment_id>/cancel', methods=['PUT'])
+def cancel_appointment(appointment_id):
+    print(f"Cancelling appointment {appointment_id}")
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    
+    try:
+        # Verify appointment belongs to patient
+        cursor.execute("""
+            SELECT appointment_id 
+            FROM Appointment 
+            WHERE appointment_id = %s AND patient_id = %s
+        """, (appointment_id, user_patient["patient"]["account_id"]))
+        
+        appointment = cursor.fetchone()
+        if not appointment:
+            return jsonify({
+                "success": False,
+                "message": "Appointment not found or access denied"
+            }), 404
+        
+        # Update appointment status to Cancelled
+        cursor.execute("""
+            UPDATE Appointment 
+            SET status = 'Cancelled'
+            WHERE appointment_id = %s
+        """, (appointment_id,))
+        
+        conn.commit()
+        
+        return jsonify({
+            "success": True,
+            "message": "Appointment cancelled successfully"
+        })
+    except Exception as e:
+        conn.rollback()
+        print("Error cancelling appointment:", str(e))
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()

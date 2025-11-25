@@ -22,6 +22,8 @@ import EditActivityLog from './pages/EditActivityLog';
 import PhysicianPatientActivityLog from './pages/PhysicianPatientActivityLog';
 import PhysicianViewActivityLog from './pages/PhysicianViewActivityLog';
 import PatientProfile from './pages/PatientProfile';
+import BookAppointment from './pages/BookAppointment';
+
 
 export default function App() {
   
@@ -75,6 +77,7 @@ export default function App() {
           <Route path="/physician/patient/:patientId/activitylog" element={<PhysicianPatientActivityLog />} />
           <Route path="/physician/patient/:patientId/activity/:logId/view" element={<PhysicianViewActivityLog />} />
           <Route path="/patient/profile" element={<PatientProfile />} />
+          <Route path="/patient/appointment/book" element={<BookAppointment />} /> 
         </Routes>
       </div>
     </Router>

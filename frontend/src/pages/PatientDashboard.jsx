@@ -206,7 +206,7 @@ export default function PatientDashboard() {
             />
             <button
               style={styles.bookButton}
-              onClick={() => navigate("/patient/book-appointment")}
+              onClick={() => navigate("/patient/appointment/book")}
             >
               + Book Appointment
             </button>
