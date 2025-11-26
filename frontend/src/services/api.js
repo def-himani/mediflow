@@ -7,16 +7,51 @@ const api = axios.create({
   timeout: 5000,
 });
 
+// Attach JWT tokens automatically based on route
+api.interceptors.request.use((config) => {
+  const isPatientRoute = config.url?.startsWith('/api/patient');
+  const isPhysicianRoute = config.url?.startsWith('/api/physician');
+
+  if (isPatientRoute) {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  } else if (isPhysicianRoute) {
+    const token = localStorage.getItem('physicianToken');
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+
+  return config;
+});
+
+// Global 401 handler: clear session and send user to landing page
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('physicianToken');
+      window.location.href = '/';
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Adjust endpoints to match backend prefix
 export const patientSignup = (data) => api.post('/api/patient/signup', data);
 export const patientLogin = (data) => api.post('/api/patient/login', data);
-export const getInsurances = () => api.get('/api/patient/insurances'); // use api instance
-export const getPharmacies = () => api.get('/api/patient/pharmacies'); // use api instance
+export const getInsurances = () => api.get('/api/patient/insurances');
+export const getPharmacies = () => api.get('/api/patient/pharmacies');
 export const patientHealthRecord = () => api.post('/api/patient/healthRecord');
 export const patientDashboard = () => api.post('/api/patient/dashboard');
 export const getHealthRecordById = (recordId) => api.get(`/api/patient/healthRecord/record/${recordId}`);
 export const getHealthRecordByIdPhysician = (recordId) => api.get(`/api/physician/healthRecord/record/${recordId}`);
-export const createHealthRecord = (data) => api.post('/api/physician/healthRecord/create',data);
+export const createHealthRecord = (data) => api.post('/api/physician/healthRecord/create', data);
 
 // Physician endpoints
 export const physicianProfile = () => api.get('/api/physician/profile');
@@ -38,5 +73,5 @@ export const updateActivityLog = (logId, data) => api.put(`/api/patient/activity
 export const physicianPatientActivityLogs = (patientId) => api.get(`/api/physician/patient/${patientId}/activitylogs`);
 export const physicianPatientActivityLog = (patientId, logId) => api.get(`/api/physician/patient/${patientId}/activity/${logId}`);
 
-
 export default api;
+

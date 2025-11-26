@@ -47,6 +47,11 @@ export default function PhysicianSidebar() {
     e.target.style.backgroundColor = "transparent";
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("physicianToken");
+    navigate("/");
+  };
+
   return (
     <div style={sidebarStyle}>
       <h1 style={{ fontSize: "24px", margin: 0 }}>MediFlow</h1>
@@ -79,6 +84,15 @@ export default function PhysicianSidebar() {
           onClick={() => navigate("/physician/patientList")}
         >
           Patients
+        </button>
+
+        <button
+          style={{ ...buttonStyle, marginTop: "20px", color: "red" }}
+          onMouseEnter={buttonHover}
+          onMouseLeave={buttonLeave}
+          onClick={handleLogout}
+        >
+          Logout
         </button>
       </nav>
     </div>

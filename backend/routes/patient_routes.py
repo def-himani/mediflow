@@ -1,26 +1,14 @@
 import pymysql
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, g
 from utils.db_utils import get_db_connection
-from utils.auth_utils import hash_password, generate_token
+from utils.auth_utils import hash_password, generate_token, login_required
 
-patient_bp = Blueprint('patient_bp', __name__)
-
-user_patient={
-     "patient": { 
-          "account_id": 6, 
-          "address":  "12 Maple Ave, NY 1000", 
-          "date_of_birth": "1990-03-15", 
-          "emergency_contact": "Raj Rao", 
-          "gender": "F", 
-          "insurance_id": 1, 
-          "pharmacy_id": 1
-    } 
-}
+patient_bp = Blueprint("patient_bp", __name__)
 
 # -------------------
 # Signup API
 # -------------------
-@patient_bp.route('/signup', methods=['POST'])
+@patient_bp.route("/signup", methods=["POST"])
 def signup():
     data = request.json
 
@@ -80,7 +68,7 @@ def signup():
 # -------------------
 # Login API
 # -------------------
-@patient_bp.route('/login', methods=['POST'])
+@patient_bp.route("/login", methods=["POST"])
 def login():
     data = request.json
     conn = get_db_connection()
@@ -119,7 +107,7 @@ def login():
 # Get all insurances
 # -------------------
 # Get all insurances
-@patient_bp.route('/insurances', methods=['GET'])
+@patient_bp.route("/insurances", methods=["GET"])
 def get_insurances():
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
@@ -134,7 +122,7 @@ def get_insurances():
         conn.close()
 
 # Get all pharmacies
-@patient_bp.route('/pharmacies', methods=['GET'])
+@patient_bp.route("/pharmacies", methods=["GET"])
 def get_pharmacies():
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
@@ -153,17 +141,27 @@ def get_pharmacies():
 # -------------------
 # Patient Health Records API
 # -------------------
-@patient_bp.route('/healthRecord', methods=['POST'])
+@patient_bp.route("/healthRecord", methods=["POST"])
+@login_required(role="patient")
 def healthRecords():
-
+    """Return all health records for the logged-in patient."""
+    patient_account_id = g.current_user["account_id"]
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     cursor.execute("SELECT DATABASE();")
     print(cursor.fetchone())
 
     try:
-        cursor.execute("SELECT h.record_id, h.visit_date, h.diagnosis, h.symptoms, h.lab_results, h.follow_up_required, CONCAT(a.first_name,' ', a.last_name) AS physician_name FROM HealthRecord h INNER JOIN Account a ON a.account_id=h.physician_id WHERE h.patient_id=%s",
-                       (user_patient["patient"]["account_id"],))
+        cursor.execute(
+            """
+            SELECT h.record_id, h.visit_date, h.diagnosis, h.symptoms, h.lab_results,
+                   h.follow_up_required, CONCAT(a.first_name,' ', a.last_name) AS physician_name
+            FROM HealthRecord h
+            INNER JOIN Account a ON a.account_id = h.physician_id
+            WHERE h.patient_id = %s
+            """,
+            (patient_account_id,),
+        )
         
         healthrecords = cursor.fetchall()
         return jsonify({"success": True, "message": "Health Records obtained successfully", "healthrecords": healthrecords})
@@ -179,7 +177,8 @@ def healthRecords():
 # -------------------
 # Patient Specific Health Record API
 # -------------------
-@patient_bp.route('/healthRecord/record/<record_id>', methods=['GET'])
+@patient_bp.route("/healthRecord/record/<record_id>", methods=["GET"])
+@login_required(role="patient")
 def healthRecord(record_id):
     print("record_id=",record_id)
     # data = request.json
@@ -188,13 +187,30 @@ def healthRecord(record_id):
     if not record_id:
         return jsonify({"error": "record_id is required"}), 400
    
+    patient_account_id = g.current_user["account_id"]
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     cursor.execute("SELECT DATABASE();")
     print(cursor.fetchone())
     try:
-        cursor.execute("SELECT h.record_id, h.patient_id, h.visit_date, h.diagnosis, h.symptoms, h.lab_results, h.follow_up_required, CONCAT(a.first_name,' ', a.last_name) AS physician_name, p.prescription_id, m.medication_id, m.dosage, m.frequency, m.duration, m.instructions, med.medication_name, med.dosage_form, med.storage_instructions, med.common_side_effects, med.description FROM Healthrecord h INNER JOIN Account a ON a.account_id=h.physician_id LEFT JOIN Prescription p ON p.record_id=h.record_id LEFT JOIN Medicine m ON m.prescription_id=p.prescription_id LEFT JOIN Medications med ON med.medication_id=m.medication_id WHERE h.patient_id=%s AND h.record_id=%s",
-                       (user_patient["patient"]["account_id"],record_id))
+        cursor.execute(
+            """
+            SELECT h.record_id, h.patient_id, h.visit_date, h.diagnosis, h.symptoms,
+                   h.lab_results, h.follow_up_required,
+                   CONCAT(a.first_name,' ', a.last_name) AS physician_name,
+                   p.prescription_id, m.medication_id, m.dosage, m.frequency,
+                   m.duration, m.instructions,
+                   med.medication_name, med.dosage_form, med.storage_instructions,
+                   med.common_side_effects, med.description
+            FROM Healthrecord h
+            INNER JOIN Account a ON a.account_id = h.physician_id
+            LEFT JOIN Prescription p ON p.record_id = h.record_id
+            LEFT JOIN Medicine m ON m.prescription_id = p.prescription_id
+            LEFT JOIN Medications med ON med.medication_id = m.medication_id
+            WHERE h.patient_id = %s AND h.record_id = %s
+            """,
+            (patient_account_id, record_id),
+        )
         healthrecord = cursor.fetchall()
         if not healthrecord:
             return jsonify({"error": "You do not have access to the health record!"}), 400
@@ -212,17 +228,20 @@ def healthRecord(record_id):
 # -------------------
 # Patient Dashboard API
 # -------------------
-@patient_bp.route('/dashboard', methods=['POST'])
+@patient_bp.route("/dashboard", methods=["POST"])
+@login_required(role="patient")
 def dashboard():
     print("Fetching dashboard data")
 
+    patient_account_id = g.current_user["account_id"]
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     cursor.execute("SELECT DATABASE();")
     print(cursor.fetchone())
 
     try:
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT 
                 a.appointment_id,
                 a.date,
@@ -234,7 +253,9 @@ def dashboard():
             INNER JOIN Account ac ON a.physician_id = ac.account_id
             WHERE a.patient_id = %s
             ORDER BY a.date DESC
-        """, (user_patient["patient"]["account_id"],))
+        """,
+            (patient_account_id,),
+        )
         
         appointments = cursor.fetchall()
         print(appointments)
@@ -255,13 +276,16 @@ def dashboard():
 # -------------------
 # Activity Log API
 # -------------------
-@patient_bp.route('/activitylogs', methods=['GET'])
+@patient_bp.route("/activitylogs", methods=["GET"])
+@login_required(role="patient")
 def get_activity_logs():
     """Get all activity logs for the current patient."""
+    patient_account_id = g.current_user["account_id"]
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     try:
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT 
                 log_id,
                 log_date,
@@ -272,7 +296,9 @@ def get_activity_logs():
             FROM ActivityLog
             WHERE patient_id = %s
             ORDER BY log_date DESC
-        """, (user_patient["patient"]["account_id"],))
+        """,
+            (patient_account_id,),
+        )
         
         logs = cursor.fetchall()
         return jsonify({"success": True, "logs": logs}), 200
@@ -287,13 +313,16 @@ def get_activity_logs():
 # -------------------
 # Get Specific Activity Log
 # -------------------
-@patient_bp.route('/activitylog/<int:log_id>', methods=['GET'])
+@patient_bp.route("/activitylog/<int:log_id>", methods=["GET"])
+@login_required(role="patient")
 def get_activity_log(log_id):
     """Get a specific activity log by log_id."""
+    patient_account_id = g.current_user["account_id"]
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     try:
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT 
                 log_id,
                 log_date,
@@ -303,7 +332,9 @@ def get_activity_log(log_id):
                 duration_of_physical_activity
             FROM ActivityLog
             WHERE log_id = %s AND patient_id = %s
-        """, (log_id, user_patient["patient"]["account_id"]))
+        """,
+            (log_id, patient_account_id),
+        )
         
         log = cursor.fetchone()
         if not log:
@@ -321,7 +352,8 @@ def get_activity_log(log_id):
 # -------------------
 # Create New Activity Log
 # -------------------
-@patient_bp.route('/activitylog/new', methods=['POST'])
+@patient_bp.route("/activitylog/new", methods=["POST"])
+@login_required(role="patient")
 def create_activity_log():
     """Create a new activity log."""
     data = request.json
@@ -332,23 +364,27 @@ def create_activity_log():
     if missing_fields:
         return jsonify({"success": False, "message": f"Missing fields: {', '.join(missing_fields)}"}), 400
     
+    patient_account_id = g.current_user["account_id"]
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     try:
         # Format BP as "systolic/diastolic"
         bp = f"{data['bp_systolic']}/{data['bp_diastolic']}"
         
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO ActivityLog (patient_id, log_date, weight, bp, calories, duration_of_physical_activity)
             VALUES (%s, %s, %s, %s, %s, %s)
-        """, (
-            user_patient["patient"]["account_id"],
-            data['date'],
-            data['weight'],
-            bp,
-            data['calories'],
-            data['duration']
-        ))
+        """,
+            (
+                patient_account_id,
+                data["date"],
+                data["weight"],
+                bp,
+                data["calories"],
+                data["duration"],
+            ),
+        )
         
         conn.commit()
         return jsonify({"success": True, "message": "Activity log created successfully"}), 201
@@ -364,18 +400,20 @@ def create_activity_log():
 # -------------------
 # Update Activity Log
 # -------------------
-@patient_bp.route('/activitylog/<int:log_id>/edit', methods=['PUT'])
+@patient_bp.route("/activitylog/<int:log_id>/edit", methods=["PUT"])
+@login_required(role="patient")
 def update_activity_log(log_id):
     """Update an existing activity log."""
     data = request.json
     
+    patient_account_id = g.current_user["account_id"]
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     try:
         # Verify ownership
         cursor.execute(
             "SELECT log_id FROM ActivityLog WHERE log_id = %s AND patient_id = %s",
-            (log_id, user_patient["patient"]["account_id"])
+            (log_id, patient_account_id),
         )
         if not cursor.fetchone():
             return jsonify({"success": False, "message": "Activity log not found"}), 404
