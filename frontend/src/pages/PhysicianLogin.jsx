@@ -12,7 +12,9 @@ function PhysicianLogin() {
         e.preventDefault();
         try {
             const res = await physicianLogin(form);
-            localStorage.setItem("physicianToken", res.data.token);
+            if (res.data?.token) {
+                localStorage.setItem("physicianToken", res.data.token);
+            }
             alert("Login successful!");
             navigate('/physiciandashboard'); // redirect after login
         } catch (err) {

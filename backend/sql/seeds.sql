@@ -141,16 +141,16 @@ INSERT IGNORE INTO Medications (medication_id, medication_name, dosage_form, sto
 
 -- Appointment Data
 INSERT IGNORE INTO Appointment (appointment_id, patient_id, physician_id, date, status, reason, notes) VALUES
-(1, 6, 1, '2025-10-10', 'Completed', 'Chest pain', 'Recommended ECG'),
-(2, 7, 2, '2025-10-11', 'Pending', 'Skin allergy', 'Patch test planned'),
-(3, 8, 3, '2025-09-25', 'Completed', 'Migraine', 'Follow-up after 2 weeks'),
-(4, 9, 4, '2025-08-20', 'Completed', 'Back pain', 'Prescribed physiotherapy'),
-(5, 10, 5, '2025-08-15', 'Cancelled', 'Fever', 'Reschedule in 3 days'),
-(6, 11, 1, '2025-07-18', 'Completed', 'High BP', 'Lifestyle changes suggested'),
-(7, 12, 2, '2025-07-10', 'Pending', 'Rash', 'Ointment prescribed'),
-(8, 13, 3, '2025-06-25', 'Completed', 'Headache', 'MRI normal'),
-(9, 14, 4, '2025-06-05', 'Completed', 'Knee pain', 'Rehabilitation therapy ongoing'),
-(10, 15, 5, '2025-05-29', 'Completed', 'Cold', 'Recovered, no meds');
+(1, 6, 1, '2025-10-10 09:30:00', 'Completed', 'Chest pain', 'Recommended ECG'),
+(2, 7, 2, '2025-10-11 10:15:00', 'Pending', 'Skin allergy', 'Patch test planned'),
+(3, 8, 3, '2025-09-25 14:00:00', 'Completed', 'Migraine', 'Follow-up after 2 weeks'),
+(4, 9, 4, '2025-08-20 11:45:00', 'Completed', 'Back pain', 'Prescribed physiotherapy'),
+(5, 10, 5, '2025-08-15 16:20:00', 'Cancelled', 'Fever', 'Reschedule in 3 days'),
+(6, 11, 1, '2025-07-18 09:00:00', 'Completed', 'High BP', 'Lifestyle changes suggested'),
+(7, 12, 2, '2025-07-10 13:30:00', 'Pending', 'Rash', 'Ointment prescribed'),
+(8, 13, 3, '2025-06-25 15:10:00', 'Completed', 'Headache', 'MRI normal'),
+(9, 14, 4, '2025-06-05 10:00:00', 'Completed', 'Knee pain', 'Rehabilitation therapy ongoing'),
+(10, 15, 5, '2025-05-29 11:25:00', 'Completed', 'Cold', 'Recovered, no meds');
 
 -- HealthRecord Data
 INSERT IGNORE INTO HealthRecord (record_id, patient_id, physician_id, visit_date, diagnosis, symptoms, lab_results, follow_up_required) VALUES
