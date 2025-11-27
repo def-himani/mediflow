@@ -12,6 +12,8 @@ export default function CreateHealthRecord() {
   const [labResults, setLabResults] = useState("");
   const [followUpRequired, setFollowUpRequired] = useState("");
 
+  const today = new Date().toISOString().split("T")[0];
+
   const [medications, setMedications] = useState([]);
   const [prescriptions, setPrescriptions] = useState([
     { medication_id: "", dosage: "", frequency: "", duration: "", instructions: "" },
@@ -41,6 +43,12 @@ export default function CreateHealthRecord() {
   const handleMedChange = (index, field, value) => {
     const updated = [...prescriptions];
     updated[index][field] = value;
+    setPrescriptions(updated);
+  };
+
+  const handleRemoveMedicine = (index) => {
+    const updated = [...prescriptions];
+    updated.splice(index, 1);
     setPrescriptions(updated);
   };
 
@@ -89,6 +97,7 @@ export default function CreateHealthRecord() {
     label: { fontWeight: "bold", marginBottom: "6px" },
     card: { backgroundColor: "#e6f0ff", borderRadius: "8px", padding: "16px", marginBottom: "16px", boxShadow: "0 2px 6px rgba(0,0,0,0.1)" },
     button: { padding: "10px 18px", backgroundColor: "#4a90e2", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "bold", marginTop: "10px" },
+    deleteButton: { backgroundColor: "red", color: "white", border: "none", borderRadius: "4px", padding: "4px 8px", cursor: "pointer" },
   };
 
   return (
@@ -105,7 +114,13 @@ export default function CreateHealthRecord() {
 
           <div style={{ width: "300px" }}>
             <p style={styles.label}>Visit Date</p>
-            <input type="date" value={visitDate} onChange={(e) => setVisitDate(e.target.value)} style={styles.field} />
+            <input
+              type="date"
+              value={visitDate}
+              onChange={(e) => setVisitDate(e.target.value)}
+              style={styles.field}
+              max={today}
+            />
           </div>
         </div>
 
@@ -148,7 +163,18 @@ export default function CreateHealthRecord() {
 
           return (
             <div key={i} style={styles.card}>
-              <h4 style={{ fontSize: "18px", fontWeight: "bold" }}>Medicine {i + 1}</h4>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h4 style={{ fontSize: "18px", fontWeight: "bold" }}>Medicine {i + 1}</h4>
+                {prescriptions.length > 1 && (
+                  <button
+                    onClick={() => handleRemoveMedicine(i)}
+                    style={styles.deleteButton}
+                    title="Remove Medicine"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
 
               <p style={styles.label}>Medication</p>
               <select
