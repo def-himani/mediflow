@@ -72,6 +72,7 @@ export const getActivityLogs = () => api.get('/api/patient/activitylogs');
 export const getActivityLog = (logId) => api.get(`/api/patient/activitylog/${logId}`);
 export const createActivityLog = (data) => api.post('/api/patient/activitylog/new', data);
 export const updateActivityLog = (logId, data) => api.put(`/api/patient/activitylog/${logId}/edit`, data);
+export const deleteActivityLog = (logId) => api.delete(`/api/patient/activitylog/${logId}/delete`);
 
 // Physician Activity Log endpoints
 export const physicianPatientActivityLogs = (patientId) => api.get(`/api/physician/patient/${patientId}/activitylogs`);

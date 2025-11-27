@@ -167,8 +167,6 @@ export default function PhysicianAppointmentList() {
     return colors[status] || colors.Pending;
   };
 
-  const getAge = () => Math.floor(Math.random() * 60) + 20; // placeholder
-
   const handleComplete = async (appointmentId, e) => {
     e.stopPropagation();
     // Optimistic UI update
@@ -259,7 +257,7 @@ export default function PhysicianAppointmentList() {
                         <motion.tr initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2, delay: i * 0.05 }} style={i % 2 === 0 ? styles.evenRow : styles.oddRow} onClick={() => setExpandedId(expandedId === (apt.appointment_id || apt.id) ? null : (apt.appointment_id || apt.id))}>
                           <td style={styles.thtd}>{expandedId === (apt.appointment_id || apt.id) ? <ChevronUp size={18} /> : <ChevronDown size={18} />}</td>
                           <td style={styles.thtd}>{apt.patient_name}</td>
-                          <td style={styles.thtd}>{getAge(apt.date)}</td>
+                          <td style={styles.thtd}>{apt.age || "-"}</td>
                           <td style={styles.thtd}>{apt.place || apt.reason || "-"}</td>
                           <td style={styles.thtd}>{new Date(apt.date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}</td>
                           <td style={styles.thtd}><span style={{ ...styles.statusBadge, backgroundColor: getStatusColor(apt.status).bg, color: getStatusColor(apt.status).color }}>{apt.status}</span></td>

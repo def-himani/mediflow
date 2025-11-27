@@ -261,10 +261,12 @@ def appointments():
                 a.reason,
                 a.notes,
                 CONCAT(pf.first_name, ' ', pf.last_name) AS patient_name,
-                CONCAT(ac.first_name, ' ', ac.last_name) AS physician_name
+                CONCAT(ac.first_name, ' ', ac.last_name) AS physician_name,
+                YEAR(CURDATE()) - YEAR(pa.date_of_birth) AS age
             FROM Appointment a
             INNER JOIN Account ac ON a.physician_id = ac.account_id
             LEFT JOIN Account pf ON a.patient_id = pf.account_id
+            LEFT JOIN Patient pa ON a.patient_id = pa.account_id
             WHERE a.physician_id = %s
             ORDER BY a.date DESC
         """,

@@ -576,6 +576,39 @@ def update_activity_log(log_id):
         cursor.close()
         conn.close()
 
+
+# -------------------
+# Delete Activity Log
+# -------------------
+@patient_bp.route("/activitylog/<int:log_id>/delete", methods=["DELETE"])
+@login_required(role="patient")
+def delete_activity_log(log_id):
+    """Delete an activity log."""
+    patient_account_id = g.current_user["account_id"]
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    try:
+        # Verify ownership
+        cursor.execute(
+            "SELECT log_id FROM ActivityLog WHERE log_id = %s AND patient_id = %s",
+            (log_id, patient_account_id),
+        )
+        if not cursor.fetchone():
+            return jsonify({"success": False, "message": "Activity log not found"}), 404
+        
+        # Delete the activity log
+        cursor.execute("DELETE FROM ActivityLog WHERE log_id = %s", (log_id,))
+        conn.commit()
+        
+        return jsonify({"success": True, "message": "Activity log deleted successfully"}), 200
+    except Exception as e:
+        conn.rollback()
+        print(f"Error in delete_activity_log: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
 # -------------------
 # Get Available Physicians API
 # -------------------

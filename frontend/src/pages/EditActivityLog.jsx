@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/PatientSidebar";
 import { useNavigate, useParams } from "react-router-dom";
-import { getActivityLog, updateActivityLog } from "../services/api";
+import { getActivityLog, updateActivityLog, deleteActivityLog } from "../services/api";
 
 export default function EditActivityLog() {
   const { logId } = useParams();
@@ -17,6 +17,8 @@ export default function EditActivityLog() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     const fetchLog = async () => {
@@ -56,6 +58,25 @@ export default function EditActivityLog() {
 
   const handleCancel = () => {
     navigate("/patient/activitylog");
+  };
+
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      const res = await deleteActivityLog(logId);
+      
+      if (res.status === 200) {
+        navigate("/patient/activitylog");
+      } else {
+        setError("Failed to delete activity log");
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || "Error deleting activity log");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
   };
 
   const handleEdit = async () => {
@@ -156,22 +177,92 @@ export default function EditActivityLog() {
     cancelButton: {
       padding: "10px 25px",
       borderRadius: "6px",
-      border: "1px solid #ccc",
-      backgroundColor: "#f5f5f5",
-      color: "#333",
+      border: "1px solid #ddd",
+      backgroundColor: "#f8f9fa",
+      color: "#666",
       cursor: "pointer",
       fontWeight: "600",
       fontSize: "14px",
+      transition: "all 0.2s ease",
     },
     editButton: {
       padding: "10px 25px",
       borderRadius: "6px",
       border: "none",
-      backgroundColor: "#007bff",
+      backgroundColor: "#28a745",
       color: "white",
       cursor: "pointer",
       fontWeight: "600",
       fontSize: "14px",
+      transition: "all 0.2s ease",
+    },
+    deleteButton: {
+      padding: "10px 25px",
+      borderRadius: "6px",
+      border: "none",
+      backgroundColor: "#f8d7da",
+      color: "#721c24",
+      cursor: "pointer",
+      fontWeight: "600",
+      fontSize: "14px",
+      transition: "all 0.2s ease",
+    },
+    modal: {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 1000,
+    },
+    modalContent: {
+      backgroundColor: "white",
+      borderRadius: "8px",
+      padding: "30px",
+      maxWidth: "400px",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+    },
+    modalTitle: {
+      fontSize: "20px",
+      fontWeight: "700",
+      color: "#333",
+      marginBottom: "15px",
+    },
+    modalMessage: {
+      fontSize: "14px",
+      color: "#666",
+      marginBottom: "25px",
+    },
+    modalButtons: {
+      display: "flex",
+      gap: "10px",
+      justifyContent: "flex-end",
+    },
+    modalCancelButton: {
+      padding: "10px 20px",
+      borderRadius: "6px",
+      border: "1px solid #ddd",
+      backgroundColor: "#f8f9fa",
+      color: "#666",
+      cursor: "pointer",
+      fontWeight: "600",
+      fontSize: "14px",
+      transition: "all 0.2s ease",
+    },
+    modalDeleteButton: {
+      padding: "10px 20px",
+      borderRadius: "6px",
+      border: "none",
+      backgroundColor: "#f8d7da",
+      color: "#721c24",
+      cursor: "pointer",
+      fontWeight: "600",
+      fontSize: "14px",
+      transition: "all 0.2s ease",
     },
   };
 
@@ -254,6 +345,9 @@ export default function EditActivityLog() {
 
           {/* Buttons */}
           <div style={styles.buttonContainer}>
+            <button style={styles.deleteButton} onClick={() => setShowDeleteConfirm(true)} disabled={isDeleting}>
+              Delete
+            </button>
             <button style={styles.cancelButton} onClick={handleCancel}>
               Cancel
             </button>
@@ -263,6 +357,34 @@ export default function EditActivityLog() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div style={styles.modal}>
+          <div style={styles.modalContent}>
+            <h2 style={styles.modalTitle}>Delete Activity Log</h2>
+            <p style={styles.modalMessage}>
+              Are you sure you want to delete this activity log? This action cannot be undone.
+            </p>
+            <div style={styles.modalButtons}>
+              <button
+                style={styles.modalCancelButton}
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                style={styles.modalDeleteButton}
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
