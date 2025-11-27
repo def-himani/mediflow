@@ -85,5 +85,8 @@ export const bookAppointment = (data) => api.post('/api/patient/appointment/book
 export const getPatientAppointments = () => api.get('/api/patient/appointments');
 export const cancelAppointment = (appointmentId) => api.put(`/api/patient/appointment/${appointmentId}/cancel`);
 
+//Medications endpoint
+export const getMedications = () => api.get('/api/physician/medications');
+
 export default api;
 
