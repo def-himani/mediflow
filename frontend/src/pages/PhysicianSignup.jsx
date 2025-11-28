@@ -12,19 +12,22 @@ function PhysicianSignup() {
         e.preventDefault();
         try {
             const res = await physicianSignup(form);
-            alert(res.data.message);
-            navigate('/physicianlogin'); // redirect after signup
+            // Redirect directly to login page after successful signup
+            navigate('/physician/login');
         } catch (err) {
             alert(err.response?.data?.message || 'Signup failed');
         }
     };
 
     return (
-        <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="d-flex justify-content-center align-items-center vh-100" style={{ fontFamily: 'Arial, sans-serif' }}>
             <div className="card shadow p-4" style={{ maxWidth: '500px', width: '100%' }}>
                 <h2 className="mb-4 text-center text-primary">Physician Signup</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3">
+                        <label className="form-label">
+                            Username <span style={{ color: 'red' }}>*</span>
+                        </label>
                         <input
                             name="user_name"
                             onChange={handleChange}
@@ -34,6 +37,9 @@ function PhysicianSignup() {
                         />
                     </div>
                     <div className="mb-3">
+                        <label className="form-label">
+                            Password <span style={{ color: 'red' }}>*</span>
+                        </label>
                         <input
                             name="password"
                             type="password"
@@ -44,6 +50,9 @@ function PhysicianSignup() {
                         />
                     </div>
                     <div className="mb-3">
+                        <label className="form-label">
+                            First Name <span style={{ color: 'red' }}>*</span>
+                        </label>
                         <input
                             name="first_name"
                             onChange={handleChange}
@@ -53,6 +62,9 @@ function PhysicianSignup() {
                         />
                     </div>
                     <div className="mb-3">
+                        <label className="form-label">
+                            Last Name <span style={{ color: 'red' }}>*</span>
+                        </label>
                         <input
                             name="last_name"
                             onChange={handleChange}
@@ -62,6 +74,9 @@ function PhysicianSignup() {
                         />
                     </div>
                     <div className="mb-3">
+                        <label className="form-label">
+                            Email <span style={{ color: 'red' }}>*</span>
+                        </label>
                         <input
                             name="email"
                             type="email"
@@ -72,6 +87,9 @@ function PhysicianSignup() {
                         />
                     </div>
                     <div className="mb-3">
+                        <label className="form-label">
+                            Phone <span style={{ color: 'red' }}>*</span>
+                        </label>
                         <input
                             name="phone"
                             onChange={handleChange}
@@ -88,7 +106,7 @@ function PhysicianSignup() {
                         <button
                             type="button"
                             className="btn btn-link p-0"
-                            onClick={() => navigate('/physicianlogin')}
+                            onClick={() => navigate('/physician/login')}
                         >
                             Login
                         </button>

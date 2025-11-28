@@ -1,8 +1,9 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function PhysicianSidebar() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const sidebarStyle = {
     width: "240px",
@@ -19,6 +20,7 @@ export default function PhysicianSidebar() {
     fontWeight: "bold",
     borderBottom: "1px solid #333",
     paddingBottom: "5px",
+    fontSize: "16px",
   };
 
   const navStyle = {
@@ -28,23 +30,35 @@ export default function PhysicianSidebar() {
     marginTop: "10px",
   };
 
-  const buttonStyle = {
-    background: "none",
-    border: "none",
-    padding: "10px 0",
-    textAlign: "left",
-    cursor: "pointer",
-    fontSize: "16px",
-    borderRadius: "4px",
-    transition: "background-color 0.2s",
+  const getButtonStyle = (path) => {
+    const isActive = location.pathname === path;
+    return {
+      background: isActive ? "#99ccff" : "none",
+      border: "none",
+      padding: "10px 0",
+      textAlign: "left",
+      cursor: "pointer",
+      fontSize: "16px",
+      borderRadius: "4px",
+      transition: "background-color 0.2s",
+      fontWeight: isActive ? "600" : "normal",
+    };
   };
 
   const buttonHover = e => {
-    e.target.style.backgroundColor = "#99ccff";
+    if (!e.target.style.background || e.target.style.background === "none" || e.target.style.background === "transparent") {
+      e.target.style.backgroundColor = "#99ccff";
+    }
   };
 
   const buttonLeave = e => {
-    e.target.style.backgroundColor = "transparent";
+    const path = e.target.getAttribute("data-path");
+    const isActive = location.pathname === path;
+    if (!isActive) {
+      e.target.style.backgroundColor = "transparent";
+    } else {
+      e.target.style.backgroundColor = "#99ccff";
+    }
   };
 
   const handleLogout = () => {
@@ -54,13 +68,12 @@ export default function PhysicianSidebar() {
 
   return (
     <div style={sidebarStyle}>
-      <h1 style={{ fontSize: "24px", margin: 0 }}>MediFlow</h1>
-
       <div style={sectionTitleStyle}>Physician</div>
 
       <nav style={navStyle}>
         <button
-          style={buttonStyle}
+          style={getButtonStyle("/physiciandashboard")}
+          data-path="/physiciandashboard"
           onMouseEnter={buttonHover}
           onMouseLeave={buttonLeave}
           onClick={() => navigate("/physiciandashboard")}
@@ -69,7 +82,8 @@ export default function PhysicianSidebar() {
         </button>
 
         <button
-          style={buttonStyle}
+          style={getButtonStyle("/physician/appointmentList")}
+          data-path="/physician/appointmentList"
           onMouseEnter={buttonHover}
           onMouseLeave={buttonLeave}
           onClick={() => navigate("/physician/appointmentList")}
@@ -78,7 +92,8 @@ export default function PhysicianSidebar() {
         </button>
 
         <button
-          style={buttonStyle}
+          style={getButtonStyle("/physician/patientList")}
+          data-path="/physician/patientList"
           onMouseEnter={buttonHover}
           onMouseLeave={buttonLeave}
           onClick={() => navigate("/physician/patientList")}
@@ -87,7 +102,18 @@ export default function PhysicianSidebar() {
         </button>
 
         <button
-          style={{ ...buttonStyle, marginTop: "20px", color: "red" }}
+          style={{ 
+            background: "none",
+            border: "none",
+            padding: "10px 0",
+            textAlign: "left",
+            cursor: "pointer",
+            fontSize: "16px",
+            borderRadius: "4px",
+            transition: "background-color 0.2s",
+            marginTop: "20px",
+            color: "red"
+          }}
           onMouseEnter={buttonHover}
           onMouseLeave={buttonLeave}
           onClick={handleLogout}

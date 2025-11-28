@@ -1,8 +1,9 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const sidebarStyle = {
     width: "240px",
@@ -19,6 +20,7 @@ export default function Sidebar() {
     fontWeight: "bold",
     borderBottom: "1px solid #333",
     paddingBottom: "5px",
+    fontSize: "16px",
   };
 
   const navStyle = {
@@ -28,23 +30,37 @@ export default function Sidebar() {
     marginTop: "10px",
   };
 
-  const buttonStyle = {
-    background: "none",
-    border: "none",
-    padding: "10px 0",
-    textAlign: "left",
-    cursor: "pointer",
-    fontSize: "16px",
-    borderRadius: "4px",
-    transition: "background-color 0.2s",
+  const getButtonStyle = (path) => {
+    const isActive = location.pathname === path || 
+                     (path === "/patient/dashboard" && location.pathname === "/patientdashboard");
+    return {
+      background: isActive ? "#99ccff" : "none",
+      border: "none",
+      padding: "10px 0",
+      textAlign: "left",
+      cursor: "pointer",
+      fontSize: "16px",
+      borderRadius: "4px",
+      transition: "background-color 0.2s",
+      fontWeight: isActive ? "600" : "normal",
+    };
   };
 
   const buttonHover = e => {
-    e.target.style.backgroundColor = "#99ccff";
+    if (!e.target.style.background || e.target.style.background === "none" || e.target.style.background === "transparent") {
+      e.target.style.backgroundColor = "#99ccff";
+    }
   };
 
   const buttonLeave = e => {
-    e.target.style.backgroundColor = "transparent";
+    const path = e.target.getAttribute("data-path");
+    const isActive = location.pathname === path || 
+                     (path === "/patient/dashboard" && location.pathname === "/patientdashboard");
+    if (!isActive) {
+      e.target.style.backgroundColor = "transparent";
+    } else {
+      e.target.style.backgroundColor = "#99ccff";
+    }
   };
 
   const handleLogout = () => {
@@ -54,13 +70,12 @@ export default function Sidebar() {
 
   return (
     <div style={sidebarStyle}>
-      <h1 style={{ fontSize: "24px", margin: 0 }}>MediFlow</h1>
-
       <div style={sectionTitleStyle}>Patient</div>
 
       <nav style={navStyle}>
         <button
-          style={buttonStyle}
+          style={getButtonStyle("/patient/dashboard")}
+          data-path="/patient/dashboard"
           onMouseEnter={buttonHover}
           onMouseLeave={buttonLeave}
           onClick={() => navigate("/patient/dashboard")}
@@ -69,7 +84,8 @@ export default function Sidebar() {
         </button>
 
         <button
-          style={buttonStyle}
+          style={getButtonStyle("/patient/healthRecord")}
+          data-path="/patient/healthRecord"
           onMouseEnter={buttonHover}
           onMouseLeave={buttonLeave}
           onClick={() => navigate("/patient/healthRecord")}
@@ -78,16 +94,28 @@ export default function Sidebar() {
         </button>
 
         <button
-          style={buttonStyle}
+          style={getButtonStyle("/patient/activitylog")}
+          data-path="/patient/activitylog"
           onMouseEnter={buttonHover}
           onMouseLeave={buttonLeave}
-          onClick={() => navigate("/patient/activityLog")}
+          onClick={() => navigate("/patient/activitylog")}
         >
           Activity Log
         </button>
 
         <button
-          style={{ ...buttonStyle, marginTop: "20px", color: "red" }}
+          style={{ 
+            background: "none",
+            border: "none",
+            padding: "10px 0",
+            textAlign: "left",
+            cursor: "pointer",
+            fontSize: "16px",
+            borderRadius: "4px",
+            transition: "background-color 0.2s",
+            marginTop: "20px",
+            color: "red"
+          }}
           onMouseEnter={buttonHover}
           onMouseLeave={buttonLeave}
           onClick={handleLogout}

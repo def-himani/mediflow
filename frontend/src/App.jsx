@@ -65,6 +65,15 @@ export default function App() {
                             </ProtectedRoute>
                         }
                     />
+                    {/* Backward compatibility route */}
+                    <Route
+                        path="/patientdashboard"
+                        element={
+                            <ProtectedRoute role="patient">
+                                <PatientDashboard />
+                            </ProtectedRoute>
+                        }
+                    />
                     <Route
                         path="/patient/healthRecord"
                         element={

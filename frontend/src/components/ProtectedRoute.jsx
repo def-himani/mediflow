@@ -1,23 +1,32 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 
-/**
- * ProtectedRoute
- * - role: "patient" | "physician"
- * Wraps a route element and only renders it if the corresponding token is present.
- * Otherwise redirects to landing page ("/").
- */
 export default function ProtectedRoute({ role, children }) {
+  const location = useLocation();
+
+  // Public routes for both patient and physician
+  const publicPaths = [
+    '/patient/login',
+    '/patient/signup',
+    '/physician/login',
+    '/physician/signup'
+  ];
+
+  // If user is on a public page → allow regardless of token
+  if (publicPaths.includes(location.pathname)) {
+    return children;
+  }
+
   const patientToken = localStorage.getItem('token');
   const physicianToken = localStorage.getItem('physicianToken');
 
+  // Determine authorization based on role
   let isAuthorized = false;
   if (role === 'patient') {
     isAuthorized = !!patientToken;
   } else if (role === 'physician') {
     isAuthorized = !!physicianToken;
   } else {
-    // fallback: any logged-in user
     isAuthorized = !!patientToken || !!physicianToken;
   }
 
@@ -27,5 +36,3 @@ export default function ProtectedRoute({ role, children }) {
 
   return children;
 }
-
-

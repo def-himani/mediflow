@@ -30,13 +30,21 @@ api.interceptors.request.use((config) => {
 });
 
 // Global 401 handler: clear session and send user to landing page
+// But skip redirect for login/signup endpoints (they handle errors locally)
 api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response && error.response.status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('physicianToken');
-            window.location.href = '/';
+            const url = error.config?.url || '';
+            const isLoginEndpoint = url.includes('/login') || url.includes('/signup');
+            
+            // Only redirect if it's NOT a login/signup endpoint
+            // Login/signup pages should handle their own errors
+            if (!isLoginEndpoint) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('physicianToken');
+                window.location.href = '/';
+            }
         }
         return Promise.reject(error);
     }

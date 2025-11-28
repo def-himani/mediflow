@@ -4,30 +4,42 @@ import { useNavigate } from 'react-router-dom';
 
 function PatientLogin() {
     const [form, setForm] = useState({});
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+    const handleChange = e => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+        setError(''); // Clear error when user types
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
         try {
             const res = await patientLogin(form);
             if (res.data?.token) {
                 localStorage.setItem("token", res.data.token);
+                navigate('/patient/dashboard'); // redirect after login
             }
-            alert("Login successful!");
-            navigate('/patient/dashboard'); // redirect after login
         } catch (err) {
-            alert(err.response?.data?.message || 'Login failed');
+            setError(err.response?.data?.message || 'Invalid username or password');
         }
     };
 
     return (
-        <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="d-flex justify-content-center align-items-center vh-100" style={{ fontFamily: 'Arial, sans-serif' }}>
             <div className="card shadow p-4" style={{ maxWidth: '400px', width: '100%' }}>
                 <h2 className="mb-4 text-center text-primary">Patient Login</h2>
                 <form onSubmit={handleSubmit}>
+                    {error && (
+                        <div className="mb-3" style={{ color: 'red', fontSize: '14px' }}>
+                            {error}
+                        </div>
+                    )}
                     <div className="mb-3">
+                        <label className="form-label">
+                            Username <span style={{ color: 'red' }}>*</span>
+                        </label>
                         <input
                             name="user_name"
                             onChange={handleChange}
@@ -37,6 +49,9 @@ function PatientLogin() {
                         />
                     </div>
                     <div className="mb-3">
+                        <label className="form-label">
+                            Password <span style={{ color: 'red' }}>*</span>
+                        </label>
                         <input
                             name="password"
                             type="password"
@@ -54,7 +69,7 @@ function PatientLogin() {
                         <button
                             type="button"
                             className="btn btn-link p-0"
-                            onClick={() => navigate('/signup')}
+                            onClick={() => navigate('/patient/signup')}
                         >
                             Signup
                         </button>
