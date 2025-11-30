@@ -11,7 +11,7 @@ This guide walks you through setting up and seeding the MediFlow MySQL database.
 ## Step 1: Create Database
 
 ```
-mysql -u root -p < backend/sql/reset_database.sql
+mysql -h  mediflow-db.c69aeyougqec.us-east-1.rds.amazonaws.com -P 3306 -u mediflow_user -p < backend/sql/reset_database.sql
 ```
 You will be prompted for the root password for your mysql root account
 
@@ -20,10 +20,10 @@ You will be prompted for the root password for your mysql root account
 Update your [`.env`](.env) file with the database credentials:
 
 ```env
-MYSQL_HOST=127.0.0.1
+MYSQL_HOST=mediflow-db.c69aeyougqec.us-east-1.rds.amazonaws.com
 MYSQL_PORT=3306
 MYSQL_USER=mediflow_user
-MYSQL_PASSWORD=mediflow_pass
+MYSQL_PASSWORD=mediflow-pass
 MYSQL_DATABASE=mediflow_db
 MYSQL_CHARSET=utf8mb4
 ```
@@ -31,10 +31,10 @@ MYSQL_CHARSET=utf8mb4
 **For WSL + Windows MySQL:**
 
 ```env
-MYSQL_HOST=172.x.x.x
+MYSQL_HOST=mediflow-db.c69aeyougqec.us-east-1.rds.amazonaws.com
 MYSQL_PORT=3306
 MYSQL_USER=mediflow_user
-MYSQL_PASSWORD=mediflow_pass
+MYSQL_PASSWORD=mediflow-pass
 MYSQL_DATABASE=mediflow_db
 MYSQL_CHARSET=utf8mb4
 ```
@@ -46,8 +46,8 @@ Run the schema and seed file to create all tables and populate them:
 Load sample data (Insurance, Pharmacy, Accounts, Patients, Appointments, etc.):
 
 ```bash
-mysql -u root -p mediflow_db < backend/sql/schema.sql
-mysql -u root -p mediflow_db < backend/sql/seeds.sql
+mysql -h  mediflow-db.c69aeyougqec.us-east-1.rds.amazonaws.com -P 3306 -u mediflow_user -p mediflow_db < backend/sql/schema.sql
+mysql -h  mediflow-db.c69aeyougqec.us-east-1.rds.amazonaws.com -P 3306 -u mediflow_user -p mediflow_db < backend/sql/seeds.sql
 ```
 
 ## Step 4: Load Stored Procedures and Triggers
@@ -55,7 +55,7 @@ mysql -u root -p mediflow_db < backend/sql/seeds.sql
 Apply stored procedures, functions, and triggers (Manually executing file):
 
 ```bash
-mysql -u root -p mediflow_db < backend/sql/procedures_triggers.sql
+mysql -h  mediflow-db.c69aeyougqec.us-east-1.rds.amazonaws.com -P 3306 -u mediflow_user -p mediflow_db < backend/sql/procedures_triggers.sql
 ```
 
 **Expected output:** No errors (silent success).
@@ -65,7 +65,7 @@ mysql -u root -p mediflow_db < backend/sql/procedures_triggers.sql
 Load sample data (Insurance, Pharmacy, Accounts, Patients, Appointments, etc.):
 
 ```bash
-mysql -u root -p  < backend/sql/database_security.sql
+mysql -h  mediflow-db.c69aeyougqec.us-east-1.rds.amazonaws.com -P 3306 -u mediflow_user -p mediflow_db < backend/sql/database_security.sql
 ```
 
 ## Step 6: Verify Setup
@@ -75,7 +75,7 @@ Check that tables were created:
 You will be prompted for mediflow_user password: "mediflow_pass"
 
 ```bash
-mysql -h 127.0.0.1 -u mediflow_user -p mediflow_db -e "SHOW TABLES;"
+mysql -h  mediflow-db.c69aeyougqec.us-east-1.rds.amazonaws.com -P 3306 -u mediflow_user -p mediflow_db -e "SHOW TABLES;"
 ```
 
 You should see:
@@ -99,7 +99,7 @@ Specialization
 Check sample data:
 
 ```bash
-mysql -h 127.0.0.1 -u mediflow_user -p mediflow_db -e "SELECT COUNT(*) FROM Account;"
+mysql -h  mediflow-db.c69aeyougqec.us-east-1.rds.amazonaws.com -P 3306 -u mediflow_user -p mediflow_db -e "SELECT COUNT(*) FROM Account;"
 ```
 
 Should return `20` (20 seeded accounts).
