@@ -205,7 +205,7 @@ def healthRecord(record_id):
                    m.duration, m.instructions,
                    med.medication_name, med.dosage_form, med.storage_instructions,
                    med.common_side_effects, med.description
-            FROM Healthrecord h
+            FROM HealthRecord h
             INNER JOIN Account a ON a.account_id = h.physician_id
             LEFT JOIN Prescription p ON p.record_id = h.record_id
             LEFT JOIN Medicine m ON m.prescription_id = p.prescription_id

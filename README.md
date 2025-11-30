@@ -33,8 +33,8 @@ Use the database setup instructions from `README_db.md`. Run the following comma
 mysql -u root -p < backend/sql/reset_database.sql
 mysql -u root -p mediflow_db < backend/sql/schema.sql
 mysql -u root -p mediflow_db < backend/sql/seeds.sql
-mysql -u root -p < backend/sql/database_security.sql
 mysql -u root -p mediflow_db < backend/sql/procedures_triggers.sql
+mysql -u root -p < backend/sql/database_security.sql
 ```
 
 ### 4. Create & Activate Virtual Environment
