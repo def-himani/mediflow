@@ -1,72 +1,91 @@
-# MediFlow (mediflow)
+# MediFlow
 
-Full-stack scaffold: Flask (backend) + React (Vite) frontend + MySQL + Bootstrap.
-
-Quick start (macOS / zsh):
-
-1. Copy environment file and edit values:
-
-   cp .env.example .env
-   # edit .env to set passwords
-
-2. Run with Docker Compose (recommended)
-
-Development (fast feedback, Vite dev server):
-
-   docker-compose up -d --build
-
-Production (build optimized frontend, serve with nginx):
-
-   # builds production images and serves frontend via nginx on port 3000
-   docker-compose -f docker-compose.prod.yml up -d --build
-
-3. Backend health check:
-
-   curl http://localhost:5004/api/health
-
-4. Frontend dev site:
-
-   Open http://localhost:3000
-
-Backend local dev (without Docker):
-
-- Create a venv and install requirements
-
-  python3 -m venv .venv
-  source .venv/bin/activate
-  pip install -r backend/requirements.txt
-
-- Run the app
-
-  cd backend
-   python run.py
-
-Production notes (for teams):
-
-- Use `docker-compose.prod.yml` for production image builds. It builds the React app and serves it with nginx.
-- Do not commit real secrets. Keep secrets in `.env` or use a secret manager (Vault, Docker secrets, or your cloud provider).
-- Developers should use the standard `docker-compose.yml` for local dev and the `.env.example` file as a template.
-
-Database migrations:
-
-- Initialize migrations locally (one-time):
-
-   cd backend
-   flask db init
+MediFlow is a secure, integrated healthcare management platform designed to connect patients and physicians in a streamlined digital environment. The system supports appointment scheduling, electronic health records access, prescription management, and daily activity logging to give physicians deeper insight into patient well-being. Both patients and physicians share a unified interface with role-specific functionality: patients can view records, prescriptions, and log health activities, while physicians can manage schedules, review patient data, author health records, and prescribe medications. MediFlow’s design emphasizes accessibility, security, and efficiency, providing a comprehensive solution for modern electronic healthcare workflows.
 
 
-# MediFlow — Full setup & developer guide
+## Project Setup & Deployment Guide
 
-This file contains the detailed step-by-step instructions for cloning, setting up environments, where to add frontend HTML/pages, how to run locally (dev and prod), and useful commands for teams.
-
-- In CI, run `docker build` for backend and frontend and push images to your registry. Then deploy using your orchestration platform.
+Follow the steps below to clone, configure, and run the MediFlow application (backend + frontend).
 
 
-Frontend local dev (without Docker):
+### 1. Clone the Project
 
-  cd frontend
-  npm install
-  npm run dev
+```bash
+git clone https://github.com/def-himani/mediflow
+cd mediflow
+```
 
 
-Repository: https://github.com/IvanYeung0610/MediFlow.git
+### 2. Create Environment File
+
+```bash
+cp .env.example .env
+```
+
+Then **update the `MYSQL_ROOT_PASSWORD`** field in `.env` with the correct value for your system.
+
+
+### 3. Set Up the MySQL Database
+
+Use the database setup instructions from `README_db.md`. Run the following commands **in order**:
+
+```bash
+mysql -u root -p < backend/sql/reset_database.sql
+mysql -u root -p mediflow_db < backend/sql/schema.sql
+mysql -u root -p mediflow_db < backend/sql/seeds.sql
+mysql -u root -p < backend/sql/database_security.sql
+mysql -u root -p mediflow_db < backend/sql/procedures_triggers.sql
+```
+
+### 4. Create & Activate Virtual Environment
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Install backend dependencies:
+
+```bash
+pip install -r backend/requirements.txt
+```
+
+
+### 5. Run the Backend
+
+```bash
+python backend/run.py
+```
+
+The backend should now be running on its configured port (typically `5004`).
+
+
+### 6. Set Up & Run the Frontend
+
+Open a **new terminal** and run:
+
+```bash
+cd mediflow/frontend
+npm install
+npm run build
+npm start
+```
+
+
+### 7. Access the Application
+
+Visit:
+
+```
+http://localhost:4173/
+```
+
+The frontend will be connected to the running backend.
+
+# Group members
+- Ivan Yeung
+- Advait Jishnani
+- Eshaan Amin
+- Himanika Muthukumar
+- Tilak Bhansali
+
