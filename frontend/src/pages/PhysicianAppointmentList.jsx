@@ -245,7 +245,7 @@ export default function PhysicianAppointmentList() {
                     <th style={styles.thtd}></th>
                     <th style={styles.thtd}>Name</th>
                     <th style={styles.thtd}>Age</th>
-                    <th style={styles.thtd}>Place</th>
+                    <th style={styles.thtd}>Reason</th>
                     <th style={styles.thtd}>Date</th>
                     <th style={styles.thtd}>Status</th>
                   </tr>
