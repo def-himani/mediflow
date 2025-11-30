@@ -8,34 +8,12 @@ This guide walks you through setting up and seeding the MediFlow MySQL database.
 - WSL or Linux terminal access
 - `.env` file configured with database credentials (see [`.env.example`](.env.example))
 
-## Step 1: Create Database and User
-Run these commands as the MySQL `root` user:
+## Step 1: Create Database
 
-```bash
-mysql -h 127.0.0.1 -u root -p
-```
-
-You'll be prompted for the root password. Then execute:
-
-```sql
--- Create database
-CREATE DATABASE mediflow_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- Create user
-CREATE USER 'mediflow_user'@'localhost' IDENTIFIED BY 'mediflow_pass';
-
--- Grant privileges
-GRANT ALL PRIVILEGES ON mediflow_db.* TO 'mediflow_user'@'localhost';
-FLUSH PRIVILEGES;
-
--- Exit
-EXIT;
-```
-
-Alternatively you can just run the reset_database.sql file on your mysql:
 ```
 mysql -u root -p < backend/sql/reset_database.sql
 ```
+You will be prompted for the root password for your mysql root account
 
 ## Step 2: Configure Environment Variables
 
@@ -63,23 +41,23 @@ MYSQL_CHARSET=utf8mb4
 
 ## Step 3: Load Database Schema
 
-Run the schema file to create all tables:
-
-```bash
-cd mediflow/backend
-python manage.py schema
-```
-
-You'll be prompted for the password (`mediflow_pass`).
-
-**Expected output:** No errors (silent success).
-
-## Step 4: Seed the Database
+Run the schema and seed file to create all tables and populate them:
 
 Load sample data (Insurance, Pharmacy, Accounts, Patients, Appointments, etc.):
 
 ```bash
-python manage.py seed
+mysql -u root -p mediflow_db < backend/sql/schema.sql
+mysql -u root -p mediflow_db < backend/sql/seeds.sql
+```
+
+**Expected output:** No errors (silent success).
+
+## Step 4: Set up Database Users and their Permissions
+
+Load sample data (Insurance, Pharmacy, Accounts, Patients, Appointments, etc.):
+
+```bash
+mysql -u root -p  < backend/sql/database_security.sql
 ```
 
 ## Step 5: Load Stored Procedures and Triggers
@@ -94,6 +72,8 @@ mysql -u root -p mediflow_db < backend/sql/procedures_triggers.sql
 
 Check that tables were created:
 
+You will be prompted for mediflow_user password: "mediflow_pass"
+
 ```bash
 mysql -h 127.0.0.1 -u mediflow_user -p mediflow_db -e "SHOW TABLES;"
 ```
@@ -103,6 +83,7 @@ You should see:
 Tables_in_mediflow_db
 Account
 ActivityLog
+Activity_Log_Audit
 Appointment
 HealthRecord
 Insurance
@@ -112,7 +93,6 @@ Patient
 Pharmacy
 Physician
 Prescription
-Prescription_Audit
 Specialization
 ```
 

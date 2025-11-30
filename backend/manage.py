@@ -27,7 +27,7 @@ def _sql_path(name: str) -> str:
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python manage.py [schema|seed|procedures|all]")
+        print("Usage: python manage.py [schema|seed|all]")
         sys.exit(1)
 
     cmd = sys.argv[1]
@@ -39,19 +39,14 @@ def main():
     elif cmd == 'seed':
         run_sql_file(_sql_path('seeds.sql'), app)
         print('seeds.sql executed')
-    elif cmd == 'procedures':
-        run_sql_file(_sql_path('procedures_triggers.sql'), app)
-        print('procedures_triggers.sql executed')
     elif cmd == 'all':
         run_sql_file(_sql_path('schema.sql'), app)
         print('schema.sql executed')
         run_sql_file(_sql_path('seeds.sql'), app)
         print('seeds.sql executed')
-        run_sql_file(_sql_path('procedures_triggers.sql'), app)
-        print('procedures_triggers.sql executed')
     else:
         print('Unknown command:', cmd)
-        print('Usage: python manage.py [schema|seed|procedures|all]')
+        print('Usage: python manage.py [schema|seed|all]')
 
 
 if __name__ == '__main__':

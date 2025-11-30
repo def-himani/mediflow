@@ -12,16 +12,16 @@ DROP USER IF EXISTS 'mediflow_user'@'localhost';
 -- Create database
 CREATE DATABASE mediflow_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- Create user
-CREATE USER 'mediflow_user'@'localhost' IDENTIFIED BY 'mediflow_pass';
 
--- Grant all privileges
-GRANT ALL PRIVILEGES ON mediflow_db.* TO 'mediflow_user'@'localhost';
 
--- Apply changes
-FLUSH PRIVILEGES;
+-- MediFlow Database Setup with Original User
+DROP DATABASE IF EXISTS mediflow_db;
+DROP USER IF EXISTS 'mediflow_user'@'localhost'; -- application user (restricted access)
+DROP USER IF EXISTS 'mediflow_dev'@'localhost'; -- developer user (full access)
 
--- Select the database for subsequent operations
+-- Create database
+CREATE DATABASE mediflow_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 USE mediflow_db;
 
 -- Confirmation message

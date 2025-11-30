@@ -115,16 +115,6 @@ CREATE TABLE IF NOT EXISTS Prescription (
 );
 
 -- ==============================
--- Prescription Audit Table
--- ==============================
-CREATE TABLE IF NOT EXISTS Prescription_Audit (
-    audit_id INT AUTO_INCREMENT PRIMARY KEY,
-    prescription_id INT,
-    record_id INT,
-    deleted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- ==============================
 -- Medications Table
 -- ==============================
 CREATE TABLE IF NOT EXISTS Medications (
