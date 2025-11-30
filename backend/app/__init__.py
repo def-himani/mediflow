@@ -18,8 +18,8 @@ def create_app():
     # -----------------------
     # CORS Configuration
     # -----------------------
-    CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
-
+    # CORS(app, resources={r"/*": {"origins": ["http://localhost:3000","https://star-pedate-yanira.ngrok-free.dev"]}}, supports_credentials=True)
+    CORS(app, resources={r"/*": {"origins": ["http://localhost:3000"]}}, supports_credentials=True)
     # -----------------------
     # Database Configuration
     # -----------------------

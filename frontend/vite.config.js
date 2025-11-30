@@ -5,6 +5,19 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true,
-    port: 3000
+    port: 3000,
+    allowedHosts: [
+      'star-pedate-yanira.ngrok-free.dev',
+      'localhost',
+      '127.0.0.1'
+    ],
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5004',
+        changeOrigin: true,
+        secure: false,
+        logLevel: 'debug'
+      }
+    }
   }
 })
