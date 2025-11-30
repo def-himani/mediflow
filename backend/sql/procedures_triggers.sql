@@ -86,7 +86,7 @@ BEGIN
         SET MESSAGE_TEXT = 'Email address already registered.';
     ELSE
         INSERT INTO Account (user_name, password, role, first_name, last_name, email, phone)
-        VALUES (un, SHA2(pw, 256), r, f_name, l_name, em, ph);
+        VALUES (un, pw, r, f_name, l_name, em, ph);
     END IF;
 END $$
 

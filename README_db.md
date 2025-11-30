@@ -32,6 +32,11 @@ FLUSH PRIVILEGES;
 EXIT;
 ```
 
+Alternatively you can just run the reset_database.sql file on your mysql:
+```
+mysql -u root -p < backend/sql/reset_database.sql
+```
+
 ## Step 2: Configure Environment Variables
 
 Update your [`.env`](.env) file with the database credentials:

@@ -12,33 +12,32 @@ patient_bp = Blueprint("patient_bp", __name__)
 def signup():
     data = request.json
 
-    # Required fields
     required_fields = ['user_name', 'password', 'first_name', 'last_name', 'email', 'phone']
     missing_fields = [f for f in required_fields if f not in data]
     if missing_fields:
         return jsonify({"success": False, "message": f"Missing fields: {', '.join(missing_fields)}"}), 400
 
     conn = get_db_connection()
-    cursor = conn.cursor(pymysql.cursors.DictCursor)  # <-- Use DictCursor here
-    cursor.execute("SELECT DATABASE();")
-    print(cursor.fetchone())
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
 
     try:
-        # Check if username/email exists
-        cursor.execute("SELECT account_id FROM Account WHERE user_name=%s OR email=%s",
-                       (data['user_name'], data['email']))
-        if cursor.fetchone():
-            return jsonify({"success": False, "message": "Username/email already exists"}), 400
+        # Use stored procedure for account registration
+        cursor.callproc('register_account', [
+            data['user_name'],
+            hash_password(data['password']),
+            'patient',
+            data['first_name'],
+            data['last_name'],
+            data['email'],
+            data['phone']
+        ])
+        
+        # Get the newly created account_id
+        cursor.execute("SELECT account_id FROM Account WHERE user_name=%s", (data['user_name'],))
+        account = cursor.fetchone()
+        account_id = account['account_id']
 
-        # Insert into Account table
-        hashed_pw = hash_password(data['password'])
-        cursor.execute("""
-            INSERT INTO Account (user_name, password, role, first_name, last_name, email, phone)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (data['user_name'], hashed_pw, 'patient', data['first_name'], data['last_name'], data['email'], data['phone']))
-        account_id = cursor.lastrowid
-
-        # Insert into Patient table (optional fields)
+        # Insert into Patient table
         cursor.execute("""
             INSERT INTO Patient (account_id, date_of_birth, gender, address, insurance_id, pharmacy_id, emergency_contact)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -56,10 +55,14 @@ def signup():
         token = generate_token(account_id, 'patient')
         return jsonify({"success": True, "message": "Account created successfully", "token": token})
 
+    except pymysql.err.OperationalError as e:
+        conn.rollback()
+        if 'Email address already registered' in str(e):
+            return jsonify({"success": False, "message": "Email address already registered"}), 400
+        return jsonify({"success": False, "message": str(e)}), 500
     except Exception as e:
         conn.rollback()
         return jsonify({"success": False, "message": str(e)}), 500
-
     finally:
         cursor.close()
         conn.close()
