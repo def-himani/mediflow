@@ -8,12 +8,12 @@ This guide walks you through setting up and seeding the MediFlow MySQL database.
 - WSL or Linux terminal access
 - `.env` file configured with database credentials (see [`.env.example`](.env.example))
 
-## Step 1: Create Database
+## Step 1: Reset Database contents
 
 ```
 mysql -h  mediflow-db.c69aeyougqec.us-east-1.rds.amazonaws.com -P 3306 -u mediflow_user -p < backend/sql/reset_database.sql
 ```
-You will be prompted for the root password for your mysql root account
+You will be prompted for the password to the configured mysql user
 
 ## Step 2: Configure Environment Variables
 
