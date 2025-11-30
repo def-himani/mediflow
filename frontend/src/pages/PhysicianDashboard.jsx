@@ -127,7 +127,7 @@ export default function PhysicianDashboard() {
   const upcomingAppointments = appointments
     .filter((a) => {
       const d = new Date(a.date);
-      return !isNaN(d) && d >= now;
+      return !isNaN(d) && d >= now && a.status === 'Pending';
     })
     .sort((a, b) => new Date(a.date) - new Date(b.date));
   const upcoming = upcomingAppointments.length > 0 ? upcomingAppointments[0] : null;
@@ -141,7 +141,7 @@ export default function PhysicianDashboard() {
   const latestPast = pastAppointments.length > 0 ? pastAppointments[0] : null;
 
   // prefer backend-provided next appointment when available
-  const displayUpcoming = summary.next_appointment || upcoming;
+  const displayUpcoming = upcoming;
 
   const physicianOptions = [...new Set(appointments.map((apt) => apt.physician_name))];
 

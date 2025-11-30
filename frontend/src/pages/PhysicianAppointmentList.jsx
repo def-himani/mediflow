@@ -282,10 +282,12 @@ export default function PhysicianAppointmentList() {
                                   </div>
                                 </div>
 
-                                <div style={{ marginTop: 12, display: "flex", gap: 10, justifyContent: "flex-end" }}>
-                                  <button style={{ padding: "8px 16px", borderRadius: "4px", border: "none", backgroundColor: "#28a745", color: "white", cursor: "pointer", fontWeight: "600", fontSize: "14px" }} onClick={(e) => handleComplete(apt.appointment_id || apt.id, e)}>Complete</button>
-                                  <button style={{ padding: "8px 16px", borderRadius: "4px", border: "none", backgroundColor: "#dc3545", color: "white", cursor: "pointer", fontWeight: "600", fontSize: "14px" }} onClick={(e) => handleCancel(apt.appointment_id || apt.id, e)}>Cancel</button>
-                                </div>
+                                {apt.status === 'Pending' && (
+                                  <div style={{ marginTop: 12, display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                                    <button style={{ padding: "8px 16px", borderRadius: "4px", border: "none", backgroundColor: "#28a745", color: "white", cursor: "pointer", fontWeight: "600", fontSize: "14px" }} onClick={(e) => handleComplete(apt.appointment_id || apt.id, e)}>Complete</button>
+                                    <button style={{ padding: "8px 16px", borderRadius: "4px", border: "none", backgroundColor: "#dc3545", color: "white", cursor: "pointer", fontWeight: "600", fontSize: "14px" }} onClick={(e) => handleCancel(apt.appointment_id || apt.id, e)}>Cancel</button>
+                                  </div>
+                                )}
                               </div>
                             </td>
                           </motion.tr>
