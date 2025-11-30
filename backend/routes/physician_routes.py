@@ -22,20 +22,22 @@ def signup():
     cursor = conn.cursor(pymysql.cursors.DictCursor)
 
     try:
-        # Check if username/email exists
-        cursor.execute("SELECT account_id FROM Account WHERE user_name=%s OR email=%s",
-                       (data['user_name'], data['email']))
-        if cursor.fetchone():
-            return jsonify({"success": False, "message": "Username/email already exists"}), 400
-
-        # Insert into Account table
-        hashed_pw = hash_password(data['password'])
-        cursor.execute("""
-            INSERT INTO Account (user_name, password, role, first_name, last_name, email, phone)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (data['user_name'], hashed_pw, 'physician', data['first_name'], data['last_name'], data['email'], data['phone']))
-        account_id = cursor.lastrowid
-
+        # Use stored procedure for account registration
+        cursor.callproc('register_account', [
+            data['user_name'],
+            hash_password(data['password']),
+            'physician',
+            data['first_name'],
+            data['last_name'],
+            data['email'],
+            data['phone']
+        ])
+        
+        # Get the newly created account_id
+        cursor.execute("SELECT account_id FROM Account WHERE user_name=%s", (data['user_name'],))
+        account = cursor.fetchone()
+        account_id = account['account_id']
+    
         # Insert into Physician table (optional fields)
         cursor.execute("""
             INSERT INTO Physician (account_id, specialization_id, license_number)

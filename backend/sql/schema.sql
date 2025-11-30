@@ -165,3 +165,14 @@ CREATE TABLE IF NOT EXISTS ActivityLog (
     duration_of_physical_activity INT,
     FOREIGN KEY (patient_id) REFERENCES Patient(account_id) ON DELETE CASCADE
 );
+
+-- ==============================
+-- Activity Log Audit Table
+-- ==============================
+CREATE TABLE IF NOT EXISTS Activity_Log_Audit (
+    audit_id INT AUTO_INCREMENT PRIMARY KEY,
+    log_id INT,
+    deleted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_log_id (log_id),
+    INDEX idx_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
