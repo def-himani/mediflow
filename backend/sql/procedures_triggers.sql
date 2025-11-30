@@ -80,12 +80,12 @@ CREATE PROCEDURE register_account (
     IN f_name VARCHAR(50), IN l_name VARCHAR(50), IN em VARCHAR(100), IN ph VARCHAR(20))
 BEGIN
     DECLARE existing_email_count INT;
-    SELECT COUNT(*) INTO existing_email_count FROM account WHERE email = em;
+    SELECT COUNT(*) INTO existing_email_count FROM Account WHERE email = em;
     IF existing_email_count > 0 THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Email address already registered.';
     ELSE
-        INSERT INTO account (user_name, password, role, first_name, last_name, email, phone)
+        INSERT INTO Account (user_name, password, role, first_name, last_name, email, phone)
         VALUES (un, SHA2(pw, 256), r, f_name, l_name, em, ph);
     END IF;
 END $$

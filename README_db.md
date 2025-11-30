@@ -79,10 +79,10 @@ python manage.py seed
 
 ## Step 5: Load Stored Procedures and Triggers
 
-Apply stored procedures, functions, and triggers:
+Apply stored procedures, functions, and triggers (Manually executing file):
 
 ```bash
-Still being figured out...
+mysql -u root -p mediflow_db < backend/sql/procedures_triggers.sql
 ```
 
 ## Step 6: Verify Setup
