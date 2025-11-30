@@ -50,22 +50,22 @@ mysql -u root -p mediflow_db < backend/sql/schema.sql
 mysql -u root -p mediflow_db < backend/sql/seeds.sql
 ```
 
-**Expected output:** No errors (silent success).
-
-## Step 4: Set up Database Users and their Permissions
-
-Load sample data (Insurance, Pharmacy, Accounts, Patients, Appointments, etc.):
-
-```bash
-mysql -u root -p  < backend/sql/database_security.sql
-```
-
-## Step 5: Load Stored Procedures and Triggers
+## Step 4: Load Stored Procedures and Triggers
 
 Apply stored procedures, functions, and triggers (Manually executing file):
 
 ```bash
 mysql -u root -p mediflow_db < backend/sql/procedures_triggers.sql
+```
+
+**Expected output:** No errors (silent success).
+
+## Step 5: Set up Database Users and their Permissions
+
+Load sample data (Insurance, Pharmacy, Accounts, Patients, Appointments, etc.):
+
+```bash
+mysql -u root -p  < backend/sql/database_security.sql
 ```
 
 ## Step 6: Verify Setup

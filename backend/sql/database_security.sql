@@ -33,7 +33,6 @@ GRANT INSERT ON mediflow_db.HealthRecord TO 'mediflow_user'@'localhost';
 GRANT INSERT ON mediflow_db.Prescription TO 'mediflow_user'@'localhost';
 GRANT INSERT ON mediflow_db.Medicine TO 'mediflow_user'@'localhost';
 GRANT INSERT ON mediflow_db.ActivityLog TO 'mediflow_user'@'localhost';
-GRANT INSERT ON mediflow_db.Prescription_Audit TO 'mediflow_user'@'localhost';
 GRANT INSERT ON mediflow_db.Activity_Log_Audit TO 'mediflow_user'@'localhost';
 
 -- Grant UPDATE privileges
@@ -45,6 +44,8 @@ GRANT UPDATE ON mediflow_db.ActivityLog TO 'mediflow_user'@'localhost';
 -- Grant DELETE privileges (limited)
 GRANT DELETE ON mediflow_db.ActivityLog TO 'mediflow_user'@'localhost';
 
+-- Grant EXECUTE privileges on stored procedures
+GRANT EXECUTE ON PROCEDURE mediflow_db.register_account TO 'mediflow_user'@'localhost';
 
 -- Apply changes
 FLUSH PRIVILEGES;
