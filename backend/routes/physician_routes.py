@@ -442,10 +442,31 @@ def dashboard_summary():
         )
         prescriptions = cursor.fetchall()
 
+        # Get next upcoming appointment for the physician (exclude Completed/Cancelled)
+        cursor.execute("""
+            SELECT
+                a.appointment_id,
+                a.patient_id,
+                a.date,
+                a.status,
+                a.reason,
+                a.notes,
+                CONCAT(pf.first_name, ' ', pf.last_name) AS patient_name
+            FROM Appointment a
+            LEFT JOIN Account pf ON a.patient_id = pf.account_id
+            WHERE a.physician_id = %s
+              AND a.status = 'Pending'
+              AND a.date >= NOW()
+            ORDER BY a.date ASC
+            LIMIT 1
+        """, (physician_account_id,))
+        next_appointment = cursor.fetchone()
+
         return jsonify({
-            "success": True, 
+            "success": True,
             "activity_log": activity_log,
-            "prescriptions": prescriptions
+            "prescriptions": prescriptions,
+            "next_appointment": next_appointment
         }), 200
     except Exception as e:
         print(f"Error in dashboard_summary: {str(e)}")

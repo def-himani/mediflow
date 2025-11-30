@@ -122,7 +122,38 @@ export default function PhysicianDashboard() {
 
   console.log(filtered);
 
+  // derive upcoming (nearest future) and most recent past appointments
+  const now = new Date();
+  const upcomingAppointments = appointments
+    .filter((a) => {
+      const d = new Date(a.date);
+      return !isNaN(d) && d >= now;
+    })
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+  const upcoming = upcomingAppointments.length > 0 ? upcomingAppointments[0] : null;
+
+  const pastAppointments = appointments
+    .filter((a) => {
+      const d = new Date(a.date);
+      return !isNaN(d) && d < now;
+    })
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+  const latestPast = pastAppointments.length > 0 ? pastAppointments[0] : null;
+
+  // prefer backend-provided next appointment when available
+  const displayUpcoming = summary.next_appointment || upcoming;
+
   const physicianOptions = [...new Set(appointments.map((apt) => apt.physician_name))];
+
+  // count pending appointments for today (exclude Completed/Cancelled)
+  const startOfToday = new Date();
+  startOfToday.setHours(0,0,0,0);
+  const endOfToday = new Date();
+  endOfToday.setHours(23,59,59,999);
+  const pendingToday = appointments.filter(a => {
+    const d = new Date(a.date);
+    return a.status === 'Pending' && !isNaN(d) && d >= startOfToday && d <= endOfToday;
+  }).length;
 
   const styles = {
     container: { display: "flex", height: "100vh" },
@@ -219,7 +250,7 @@ export default function PhysicianDashboard() {
                 Welcome Dr. {profile.last_name}!
               </h2>
               <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.9)", margin: "8px 0 0 0" }}>
-                You have <strong>{appointments.length}</strong> appointments today
+                You have <strong>{pendingToday}</strong> appointments today
               </p>
             </div>
 
@@ -229,20 +260,23 @@ export default function PhysicianDashboard() {
                 <Calendar style={styles.icon} />
                 <h3 style={styles.cardTitle}>Upcoming Appointment</h3>
               </div>
-              {appointments.length > 0 ? (
+              {displayUpcoming ? (
                 <>
                   <p style={styles.cardValue}>
-                    {new Date(appointments[0].date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })} 
+                    {new Date(displayUpcoming.date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
                   </p>
                   <p style={styles.cardText}>
-                    <strong>Patient:</strong> {appointments[0].patient_name}
+                    <strong>Patient:</strong> {displayUpcoming.patient_name}
                   </p>
                   <p style={styles.cardText}>
-                    <strong>Reason:</strong> {appointments[0].reason || "General checkup"}
+                    <strong>Reason:</strong> {displayUpcoming.reason || "General checkup"}
                   </p>
                 </>
               ) : (
-                <p style={styles.cardText}>No upcoming appointments</p>
+                <>
+                  <p style={{ ...styles.cardValue, color: "#666", fontSize: "18px" }}>No upcoming appointments</p>
+                  <p style={styles.cardText}>You don't have any pending future appointments scheduled.</p>
+                </>
               )}
             </div>
 
@@ -252,7 +286,8 @@ export default function PhysicianDashboard() {
                 <Heart style={styles.icon} />
                 <h3 style={styles.cardTitle}>Patient Overview</h3>
               </div>
-              <p style={styles.cardValue}>{appointments.length > 0 ? "1. " + (appointments[0].reason || "Routine") : "-"}</p>
+              {/* show most recent past appointment reason, fallback to upcoming */}
+              <p style={styles.cardValue}>{(latestPast || displayUpcoming) ? "1. " + ((latestPast || displayUpcoming).reason || "Routine") : "-"}</p>
               <p style={styles.cardText}>Most recent symptom/diagnosis from latest appointment</p>
             </div>
 
